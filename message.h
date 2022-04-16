@@ -27,16 +27,17 @@ struct Message {
     //       to result vector
 
 // I understood this problem as just using substrings. I could be wrong
-    char delimiter = ':';
+    std::string copy = data;
+    std::string delimiter = ":";
     size_t pos = 0;
     unsigned index = 0;
     std::string splitData;
 
-    while ((pos = data.find(delimiter)) != std::string::npos) { 
-        splitData = data.substr(0, pos);
-        result[i] = splitData;
+    while ((pos = copy.find(delimiter)) != std::string::npos) { 
+        splitData = copy.substr(0, pos);
+        result[index] = splitData;
         index++;
-        data.erase(0, pos + delimiter.length());
+        copy.erase(0, pos + delimiter.length());
     }
 
     return result;
