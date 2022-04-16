@@ -25,6 +25,20 @@ struct Message {
     std::vector<std::string> result;
     // TODO: split the message data into fields separated by ':', add them
     //       to result vector
+
+// I understood this problem as just using substrings. I could be wrong
+    char delimiter = ':';
+    size_t pos = 0;
+    unsigned index = 0;
+    std::string splitData;
+
+    while ((pos = data.find(delimiter)) != std::string::npos) { 
+        splitData = data.substr(0, pos);
+        result[i] = splitData;
+        index++;
+        data.erase(0, pos + delimiter.length());
+    }
+
     return result;
   }
 };
