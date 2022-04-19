@@ -16,32 +16,29 @@ struct Message {
 
   Message() { }
 
-  Message(const std::string &tag, const std::string &data)
-    : tag(tag), data(data) { }
+  Message(const std::string &tag, const std::string &data): tag(tag), data(data) { }
 
   // returns the payload (data) as a vector of strings,
   // split using ':' as the separator
   std::vector<std::string> split_payload() const {
     std::vector<std::string> result;
-    // TODO: split the message data into fields separated by ':', add them
-    //       to result vector
+    // Split the message data into fields separated by ':', add them to result vector
 
-// I understood this problem as just using substrings. I could be wrong
-    std::string copy = data;
-    std::string delimiter = ":";
+    //I understood this problem as just using substrings. I could be wrong
+    std::string copy = data; //Copy data into copy
+    std::string delimiter = ":"; //Use delimiter for STRING.find()
     size_t pos = 0;
-    unsigned index = 0;
-    std::string splitData;
 
-    while ((pos = copy.find(delimiter)) != std::string::npos) { 
-        splitData = copy.substr(0, pos);
-        result[index] = splitData;
-        index++;
-        copy.erase(0, pos + delimiter.length());
+    if ((pos = copy.find(delimiter)) != std::string::npos) {
+      result[0] = copy.substr(0, pos); 
+      copy.erase(0, pos);
+      result[1] = copy.substr(0, data.length - pos); //TODO:: figure out if this is right range
     }
-
+   
     return result;
   }
+
+
 };
 
 // standard message tags (note that you don't need to worry about

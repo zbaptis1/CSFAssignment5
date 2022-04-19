@@ -18,7 +18,12 @@ Connection::Connection(int fd)
 
 void Connection::connect(const std::string &hostname, int port) {
   // TODO: call open_clientfd to connect to the server
+
+  riot_t obj = open_clientfd(); //OUR OWN TODO: figure out args and return value(if any)
+
   // TODO: call rio_readinitb to initialize the rio_t object
+  rio_readinitb(); //OUR OWN TODO: figure out args and return value
+
 }
 
 Connection::~Connection() {
