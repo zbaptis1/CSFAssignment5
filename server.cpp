@@ -50,10 +50,11 @@ void *worker(void *arg) {
 // Server member function implementation
 ////////////////////////////////////////////////////////////////////////
 
-Server::Server(int port)
-  : m_port(port)
-  , m_ssock(-1) {
+Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
+
+
+  ptthread_mutex_init(&m_lock, m_ssock); // OUR OWN TODO:: figure out mutex in threads
 }
 
 Server::~Server() {
@@ -63,11 +64,34 @@ Server::~Server() {
 bool Server::listen() {
   // TODO: use open_listenfd to create the server socket, return true
   //       if successful, false if not
+
+  //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
+  int server_fd = open_listenfd(m_port);
+  if (server_fd < 0) { return false;}
+  
+  return true;
 }
 
 void Server::handle_client_requests() {
   // TODO: infinite loop calling accept or Accept, starting a new
   //       pthread for each connected client
+
+
+  //FROM LECTURE 27: APP PROTOCOLS {SLIDE 25}
+
+  int keep_going = 1;
+  while (keep_going) {
+
+
+    // MAYBE LAST 2 ARGS AREN'T NECESSARY: Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
+    int client_fd = Accept(server_fd, NULL, NULL);
+    if (client_fd > 0) {
+      keep_going = chat_with_client(client_fd);
+      close(client_fd);
+    }
+  }
+
+  
 }
 
 Room *Server::find_or_create_room(const std::string &room_name) {
