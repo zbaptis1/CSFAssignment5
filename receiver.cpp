@@ -25,19 +25,25 @@ int main(int argc, char **argv) {
 
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
-  Message * rlogin(TAG_RLOGIN, "/rlogin " + username);
-  Message * join(TAG_JOIN, "/join " + room_name);
+    
+  Message rlogin(TAG_RLOGIN, "/rlogin " + username);
+  Message join(TAG_JOIN, "/join " + room_name);
 
-  if (conn.send()) {
-    printf("Succesful send\n");
-  } else { // invalid or EOF
-    printf("Failed send\n");
-  }
+  conn.send(rlogin);
+  conn.send(join);
+
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
   while(1) {
-    
+    /** TODO: how to recieve messages
+      use messageQueue?
+      change the tag of these messages to TAG_DELIVERY?
+
+      where do these messages output?
+
+      end command to end while loop
+      */
 
   }
 

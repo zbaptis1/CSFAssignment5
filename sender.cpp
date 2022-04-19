@@ -25,19 +25,21 @@ int main(int argc, char **argv) {
 
   // USE CONNECTION FUNCTIONALITY HERE 
 
-  // TODO: send slogin message (assuming this goes to server)
+  // TODO: send slogin message
   Message slogin(TAG_SLOGIN, "/slogin " + username); 
-  rio_writen(fd, slogin, strlen(slogin)); // writes /slogin [username] to server
-  rio_writen(fd, "\n", 1); // just a newline
+  conn.send(slogin);
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
   while (1) {
-    
+    /** TODO: how to read commands
+      do we use scanf to read user input
 
+      message <- scanf
+      use conn.send(message) for server
 
-
-
+      end command to end while loop
+      */
   }
   return 0;
 }

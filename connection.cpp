@@ -10,8 +10,8 @@ Connection::Connection(): m_fd(-1), m_last_result(SUCCESS) {
 
 Connection::Connection(int fd): m_fd(fd), m_last_result(SUCCESS) {
   // TODO: call rio_readinitb to initialize the rio_t object
-  rio_t in; 
-  rio_readinitb();
+  rio_t rio;
+  rio_readinitb(&rio, m_fd);
 }
 
 void Connection::connect(const std::string &hostname, int port) { // used sockets.zip
@@ -24,12 +24,12 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
 
   // TODO: call rio_readinitb to initialize the rio_t object
   rio_t rio;
-  rio_readinitb(&rio, fd);
+  rio_readinitb(&rio, m_fd);
 }
 
 Connection::~Connection() {
   // TODO: close the socket if it is open
-  if (is_open()) { close(m_fd); }
+  if (/** TODO: isOpen for Socket */ ) { close(m_fd); }
 
 }
 
@@ -42,7 +42,7 @@ bool Connection::is_open() const {
 void Connection::close() { // idk
   // TODO: close the connection if it is open
   if (is_open()) {
-    close(m_fd);
+    /** TODO: how to close connection */
   }
 
 }
@@ -52,7 +52,6 @@ bool Connection::send(const Message &msg) {
 
   rio_writen(fd, msg, strlen(msg)); // writes msg to serve
   rio_writen(fd, "\n", 1); // just a newline
-
 
   /** TODO: HOW TO CHECK THIS */
   // return true if successful, false if not
