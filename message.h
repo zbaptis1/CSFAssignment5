@@ -31,14 +31,12 @@ struct Message {
 
     if ((pos = copy.find(delimiter)) != std::string::npos) {
       result[0] = copy.substr(0, pos); 
-      copy.erase(0, pos);
-      result[1] = copy.substr(0, data.length - pos); //TODO:: figure out if this is right range
+      copy.erase(0, pos + 1);
+      result[1] = copy; 
     }
    
     return result;
   }
-
-
 };
 
 // standard message tags (note that you don't need to worry about
