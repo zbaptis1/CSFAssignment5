@@ -43,11 +43,22 @@ void Connection::close() { // idk
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
-
-  rio_writen(m_fd, msg, strlen(msg)); // writes msg to serve
-  rio_writen(m_fd, "\n", 1); // just a newline
+  std::vector<std::string> splitPayload = msg.split_payload();
   
-
+  if (splitPayload[0].equals(TAG_ERR)) {
+    if (splitPayload[1].find("ERROR") != std::string::npos) {
+      m_last_result = INVALID_MSG;
+      return false; 
+    }
+  }
+  
+  ssize_t n = rio_writen(m_fd, msg, strlen(msg)); // writes msg to server
+  
+  if (n < 1) {
+    m_last_result = EOF_OR_ERROR;
+    return false;
+  }
+  
   /** TODO: 
     - HOW TO CHECK THIS (Zyan)
     - Redo this function or check to see what to add other
