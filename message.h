@@ -28,6 +28,9 @@ struct Message {
 
   std::string tag;
   std::string data;
+  std::vector<std::string> tagTable = {TAG_ERR, TAG_OK, TAG_SLOGIN,
+                                      TAG_RLOGIN, TAG_JOIN, TAG_LEAVE, TAG_SENDALL, 
+                                      TAG_SENDUSER, TAG_QUIT, TAG_DELIVERY, TAG_EMPTY};
 
   Message() { }
 
@@ -37,24 +40,38 @@ struct Message {
   // split using ':' as the separator
   std::vector<std::string> split_payload() const {
     std::vector<std::string> result;
-    std::vector<std::string> tagTable = {TAG_ERR, TAG_OK, TAG_SLOGIN,
-                                      TAG_RLOGIN, TAG_JOIN, TAG_LEAVE, TAG_SENDALL, 
-                                      TAG_SENDUSER, TAG_QUIT, TAG_DELIVERY, TAG_EMPTY};
+    
    
    /* Check to see if valid message */
     // An encoded message must not be more than MAX_LENGTH bytes.
-    if (tag.size() > 255) { return result; }
+    if (tag.size() > 255) {
+      result[0] = tagTable[0];
+      result[1] = "ERROR The given message was longer than 255 bytes"; 
+      return result;
+    }
     
     // A message must be a single line of text with no newline characters contained within it.
     int newLineCount = std::count(tag.begin(), tag.end(), "\n");
-    if (newLineCount < 1 || data.find(":") == std::string::npos) { return result; }
+    if (newLineCount < 1 || data.find(":") == std::string::npos) { 
+      result[0] = tagTable[0];
+      result[1] = "ERROR no newline character or no color separartor"; 
+      return result;
+    }
     
     // The tag must be one of the operations specified in the “tag table”.
-    if (std::find(tagTable.begin(), tagTable.end(), tag) == tagTable.end()) { return result; } // tag is not in tag table
+    if (std::find(tagTable.begin(), tagTable.end(), tag) == tagTable.end()) { 
+      result[0] = tagTable[0];
+      result[1] = "ERROR The given tag was not apart of the tag table"; 
+      return result;
+    } // tag is not in tag table
 
     // The payload is an arbitrary sequence of characters. If a tag has a structured payload, the payload must be formatted exactly as specified.
     if (tag == TAG_DELIVERY) { // room:sender:message_text;
-      if (std::count(tag.begin(), tag.end(), ':') != 2) { return result; }
+      if (std::count(tag.begin(), tag.end(), ':') != 2) {
+        result[0] = tagTable[0];
+        result[1] = "ERROR The given message payload was not structured correctly"; 
+        return result;
+      }
     }
 
     std::string copy = data; //Copy data into copy
