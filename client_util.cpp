@@ -22,3 +22,14 @@ std::string rtrim(const std::string &s) {
 std::string trim(const std::string &s) {
   return rtrim(ltrim(s));
 }
+
+bool islowercased(string &s) {
+  for(char c : s) 
+    if (!(c >= 'a' and c <= 'z')) return false;
+  
+  return true;
+}
+
+bool hasColon(string &s) {
+  return s.find(":") != std::string::npos;
+}
