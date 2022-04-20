@@ -52,7 +52,7 @@ struct Message {
     
     // A message must be a single line of text with no newline characters contained within it.
     int newLineCount = std::count(tag.begin(), tag.end(), "\n");
-    if (newLineCount < 1 || !hasColon(data)) { 
+    if (newLineCount < 1 || (data.find(":") == std::string::npos)) { 
       result[0] = tagTable[0];
       result[1] = "ERROR no newline character or no color separartor"; 
       return result;
