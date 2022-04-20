@@ -14,13 +14,12 @@ int main(int argc, char **argv) {
   }
 
   std::string server_hostname = argv[1];
-  int server_port = std::stoi(argv[2]);
+  int server_port = std::stoi(argv[2]); /** TODO: use try-catch for error check maybe */
   std::string username = argv[3];
   std::string room_name = argv[4];
 
-  Connection conn;
-
   // TODO: connect to server
+  Connection conn;
   conn.connect(server_hostname, server_port);
 
   // TODO: send rlogin and join messages (expect a response from
@@ -29,21 +28,34 @@ int main(int argc, char **argv) {
   Message rlogin(TAG_RLOGIN, "/rlogin " + username);
   Message join(TAG_JOIN, "/join " + room_name);
 
-  conn.send(rlogin);
-  conn.send(join);
+  if (!conn.send(rlogin)) { //Error sending login
+    /** TODO: figure out how to handle send error 
+              Maybe it's printing to stdcerr??? */
+  }
 
+  if (!conn.send(join)) { //Error sending join request
+    /** TODO: figure out how to handle send error 
+              Maybe it's printing to stdcerr??? */
+
+    /** PIAZZA: if the response is err, you must print 
+    exactly the payload to stderr, with a single newline at the end. */
+    std::cerr << join.data << endl;
+  }
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
   while(1) {
     /** TODO: how to recieve messages
-      use messageQueue?
-      change the tag of these messages to TAG_DELIVERY?
+        - use messageQueue?
+        - change the tag of these messages to TAG_DELIVERY?
+        - where do these messages output?
 
-      where do these messages output?
 
-      end command to end while loop
-      */
+
+        - end command to end while loop
+    */
+
+    if 
 
   }
 
