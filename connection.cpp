@@ -43,27 +43,25 @@ void Connection::close() { // idk
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
-  std::vector<std::string> splitPayload = msg.split_payload();
+  std::vector<std::string> splitPayload = msg.split_payload(); /** TODO: might be split already */
   
-  if (splitPayload[0].equals(TAG_ERR)) {
-    if (splitPayload[1].find("ERROR") != std::string::npos) {
-      m_last_result = INVALID_MSG;
+  if (splitPayload[0].equals(TAG_ERR)) { //Error checking 
+    if (splitPayload[1].find("ERROR") != std::string::npos) { /** TODO: see if there are distinct errors for result */
+      m_last_result = INVALID_MSG; /** TODO: Might be EOFORERROR instead */
       return false; 
     }
   }
   
-  ssize_t n = rio_writen(m_fd, msg, strlen(msg)); // writes msg to server
+  string tagAndPayStr = msg.tag + ":" + msg.data; //Convert string to const char* for rio_written 2nd param
+  const char * tagAndPayCharPtr = tagAndPayStr.c_str(); /** TODO: see if this will have null-terminator 
+                                                                  (i.e '\0', important for strlen() function below */
+  ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayCharPtr)); // writes msg to server
+  /** rio_writen(m_fd, "\n", 1); TODO: MIGHT/MIGHT NOT BE NEEDED */
   
-  if (n < 1) {
+  if (n < 1) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! */
     m_last_result = EOF_OR_ERROR;
     return false;
   }
-  
-  /** TODO: 
-    - HOW TO CHECK THIS (Zyan)
-    - Redo this function or check to see what to add other
-      than these 2 lines above
-  */
 
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
