@@ -29,8 +29,7 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
 
 Connection::~Connection() {
   // TODO: close the socket if it is open
-  if (/** TODO: isOpen for Socket */ ) { close(m_fd); }
-
+  this->close();
 }
 
 bool Connection::is_open() const {
@@ -50,12 +49,14 @@ void Connection::close() { // idk
 bool Connection::send(const Message &msg) {
   // TODO: send a message
 
-  rio_writen(fd, msg, strlen(msg)); // writes msg to serve
-  rio_writen(fd, "\n", 1); // just a newline
+  rio_writen(m_fd, msg, strlen(msg)); // writes msg to serve
+  rio_writen(m_fd, "\n", 1); // just a newline
 
   /** TODO: HOW TO CHECK THIS */
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
+
+
 
 }
 
@@ -63,6 +64,15 @@ bool Connection::receive(Message &msg) {
   // TODO: send a message, storing its tag and data in msg
   /** TODO: need clarification on that ^^ */
 
+  rio_writen(m_fd, msg, strlen(msg)); // writes msg to serve
+  rio_writen(m_fd, "\n", 1); // just a newline
+
+  // read response from server
+  char buf[1000];
+  ssize_t n = rio_readlineb(&rio, buf, sizeof(buf));
+
+
+  m_last_result = SET APPRORAITE;
 
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
