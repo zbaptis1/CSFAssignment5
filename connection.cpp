@@ -79,7 +79,7 @@ bool Connection::receive(Message &msg) {
   string bufStr(buf);
   msg("", bufStr);
 
-  msg.split_payload();  
+  vector<string> vec = msg.split_payload();  
 
   /** TODO: figure out what tag can be from response received from server 
             (My guess is either "ok" or "sendall") */
@@ -87,6 +87,12 @@ bool Connection::receive(Message &msg) {
   if (msg.tag == "ok" || "sendall") {
     this->send(msg);
   }
+
+  if (msg.tag == "delivery") {
+    /** TODO: use room and sender from data in msg object and utilize in sending */
+
+  }
+  
   /** TODO: see if any "error" type tags that warrant a else statement */
 
 
