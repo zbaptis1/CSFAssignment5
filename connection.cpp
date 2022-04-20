@@ -49,8 +49,12 @@ void Connection::close() { // idk
 bool Connection::send(const Message &msg) {
   // TODO: send a message
 
+
+
+
   rio_writen(m_fd, msg, strlen(msg)); // writes msg to serve
   rio_writen(m_fd, "\n", 1); // just a newline
+  
 
   /** TODO: HOW TO CHECK THIS */
   // return true if successful, false if not
@@ -64,12 +68,32 @@ bool Connection::receive(Message &msg) {
   // TODO: send a message, storing its tag and data in msg
   /** TODO: need clarification on that ^^ */
 
-  rio_writen(m_fd, msg, strlen(msg)); // writes msg to serve
-  rio_writen(m_fd, "\n", 1); // just a newline
+
+  rio_t rio;
+  rio_readinitb(&rio, m_fd);
 
   // read response from server
   char buf[1000];
   ssize_t n = rio_readlineb(&rio, buf, sizeof(buf));
+
+  string bufStr(buf);
+  msg("", bufStr);
+
+  vector<string> vec = msg.split_payload();  
+
+  /** TODO: figure out what tag can be from response received from server 
+            (My guess is either "ok" or "sendall") */
+
+  if (msg.tag == "ok" || "sendall") {
+    this->send(msg);
+  }
+
+  if (msg.tag == "delivery") {
+    /** TODO: use room and sender from data in msg object and utilize in sending */
+
+  }
+  
+  /** TODO: see if any "error" type tags that warrant a else statement */
 
 
   m_last_result = SET APPRORAITE;
