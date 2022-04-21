@@ -37,8 +37,7 @@ bool Connection::is_open() const {
 void Connection::close() { // idk
   // TODO: close the connection if it is open
   if (is_open()) {
-    /** TODO: how to close connection */
-    close(m_fd); /** TODO: find out the "special" case and how it changes this */
+    close(m_fd); 
   }
 
   m_fd = -1;
@@ -48,11 +47,9 @@ bool Connection::send(const Message &msg) {
   // TODO: send a message
   std::vector<std::string> splitPayload = msg.split_payload(); /** TODO: might be split already */
   
-  if (msg.tag.equals(TAG_ERR)) { //Error checking 
-    if (splitPayload[0].find("ERROR") != std::string::npos) { /** TODO: see if there are distinct errors for result  REFLECT IN SPLIT PAYLOAD FOR INDICY 0*/
+  if (splitPayload[0].find("ERROR") != std::string::npos) { // there was an error
       m_last_result = INVALID_MSG; /** TODO: Might be EOFORERROR instead */
       return false; 
-    }
   }
   
   string tagAndPayStr = msg.tag + ":" + msg.data + "\n"; //Convert string to const char* for rio_written 2nd param
@@ -80,10 +77,14 @@ bool Connection::receive(Message &msg) {
   // rio_readinitb(&rio, m_fd); 
 
   // read response from server
+  msg("", "");
+  string tag;
+
   char buf[1000];
   ssize_t n = rio_readlineb(&m_fdbuf, buf, sizeof(buf));
 
   if (n < 1) {
+    msg.tag = TAG_ERR; // message wasn't recieved 
     m_last_result = EOF_OR_ERROR;
     return false;
   }
@@ -96,22 +97,22 @@ bool Connection::receive(Message &msg) {
       2. (MAYBE) The tag must only require lower case characters
   */
   if (!hasColon(bufstr)) {
+    msg.tag = TAG_ERR;
     m_last_result = INVALID_MSG;
     return false;
   }
 
   size_t colonPos = bufstr.find(":")
-  string tag = bufstr.substr(0, colonPos);
+  tag = bufstr.substr(0, colonPos);
 
   if(!islowercased(tag) {
-     m_last_result = INVALID_MSG;
+    msg.tag = TAG_ERR;
+    m_last_result = INVALID_MSG;
     return false;
   }
-
   string data = bufstr.substr(colonPos + 1, strlen(bufstr));
-  msg(tag, data);
 
-
+  msg.tag = tag
   msg.data = data;
   //room:sender:text
 
@@ -127,8 +128,7 @@ bool Connection::receive(Message &msg) {
 
 // prints to stderr and closes the connection
   // automatically returns 1
-int Connection::invalidSendOrRecieve() {
+void Connection::invalidSendOrRecieve() {
   std::cerr << m_last_result() << endl;
   this->close();
-  return 1;
 }
