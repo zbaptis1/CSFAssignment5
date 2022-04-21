@@ -50,22 +50,26 @@ int main(int argc, char **argv) {
     std::getLine(std::cin, line); // gets user input
     line = trim(line); // get rid of whitespace
     
-
+/** TODO: ZYAN
+1. what happens with issues with sending a command
+*/
     if (line[0] == '/') { // for commands
       std::string command = line.substr(1, line.length());
 
       if (line.substr(1, 5) == "join") { // join
-        std::string roomName;
-        if (line.substr(5, line.length()) == "") { // Missing room name
+        std::string roomName = line.substr(5, line.length());
+        if (roomName == "") { // Missing room name
           std::cerr << "Needs a room name: ./join [room name]\n";
+        } else { // send message
+          if (!conn.send(Message(TAG_JOIN, roomName))) { // Error sending message
+            std::cerr << conn.m_last_result() << endl;
+          }
         }
       } 
 
       else if (line.substr(1, 6) == "leave") { // leave
         if (!conn.send(Message(TAG_LEAVE, "left room"))) { // Error sending message
           std::cerr << conn.m_last_result() << endl;
-          conn.close();
-          return 1;
         }
       } 
 
@@ -73,13 +77,11 @@ int main(int argc, char **argv) {
         // send message to signify quit
         if (!conn.send(Message(TAG_QUIT, "quit room"))) { // Error sending message
           std::cerr << conn.m_last_result() << endl;
-          conn.close();
-          return 1;
         }
         break;
       } 
-      
-      else {
+
+      else { // invalid commands
         std::cerr << "-Invalid command-\n" << "Valid Commands: /join /leave /quit\n"; 
       }
     } 
