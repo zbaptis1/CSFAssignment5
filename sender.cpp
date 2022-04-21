@@ -29,58 +29,68 @@ int main(int argc, char **argv) {
   
   // TODO: send slogin message
   Message slogin(TAG_SLOGIN, username); 
+  /** TODO: move the following if statement into a method; its used a lot */
   if (!conn.send(slogin)) { //Error sending login
   /** TODO: is this correct */
-      std::cerr << conn.m_last_result() << endl;
-      conn.close();
-      return 1;
+      conn.invalidSendOrRecieve();
   }
 
   if (!conn.recieve(slogin)) { // Error recieving login
   /** TODO: is this correct */
-      std::cerr << conn.m_last_result() << endl;
-      conn.close();
-      return 1;
+      conn.invalidSendOrRecieve();
   }
 
   // TODO: loop reading commands from user, sending messages to
   //       server as appropriate
   while (1) {
-    /** TODO: how to read commands
-        - do we use scanf to read user input
-        - message <- scanf
-        - use conn.send(message) for server
-
-        - end command to end while loop
-    */
-
     // Format:> [insert user input] \n
     std::cout << "> ";
-    std::string line; // user input
+    std::string line; 
 
-    std::getLine(std::cin, line);
-
-    // why trim??
+    std::getLine(std::cin, line); // gets user input
+    line = trim(line); // get rid of whitespace
     
-    if (line[0] == '/') {
+
+    if (line[0] == '/') { // for commands
       std::string command = line.substr(1, line.length());
-      // join
-      if (line.substr(1, 5) == "join") {
+
+      if (line.substr(1, 5) == "join") { // join
         std::string roomName;
-        if (line.substr(5, line.length()) == "") {
+        if (line.substr(5, line.length()) == "") { // Missing room name
           std::cerr << "Needs a room name: ./join [room name]\n";
         }
-      } else if (line.substr(1, 6) == "leave") { // leave
-        // send message to signify leave
-      } else if (line.substr(1, 5) == "quit") { // quit
+      } 
+
+      else if (line.substr(1, 6) == "leave") { // leave
+        if (!conn.send(Message(TAG_LEAVE, "left room"))) { // Error sending message
+          std::cerr << conn.m_last_result() << endl;
+          conn.close();
+          return 1;
+        }
+      } 
+
+      else if (line.substr(1, 5) == "quit") { // quit
         // send message to signify quit
+        if (!conn.send(Message(TAG_QUIT, "quit room"))) { // Error sending message
+          std::cerr << conn.m_last_result() << endl;
+          conn.close();
+          return 1;
+        }
         break;
-      } else {
+      } 
+      
+      else {
         std::cerr << "-Invalid command-\n" << "Valid Commands: /join /leave /quit\n"; 
       }
+    } 
+    
+    else { // regular messages
+      if (!conn.send(Message(TAG_SENDALL, line)) { //Error sending message
+        std::cerr << conn.m_last_result() << endl;
+        conn.close();
+        return 1;
+      }
     }
-
-    // what is send_request?
   }
   conn.close();
   return 0;
