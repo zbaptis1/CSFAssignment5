@@ -69,27 +69,23 @@ int main(int argc, char **argv) {
         - end command to end while loop
     */
 
-    // it should return Non-Zero instead of breaking when err == 1 right?
 
     if (!conn.receive(msg)) {
       err = 1;
-      return 1;
-     // break;
+      break;
     } 
     else {
 
       if (msg.tag != TAG_DELIVERY) {
         err = 1;
-        return 1;
-        // break;
+        break;
       } 
       
       vector<string> loadData = msg.split_payload();
 
       if (loadData.size() != 3) { 
         err = 1;
-        return 1;
-        // break;
+        break;
       }
 
       string room = loadData[0];
