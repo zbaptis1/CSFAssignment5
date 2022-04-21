@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
     
-  Message rlogin(TAG_RLOGIN, "/rlogin " + username);
-  Message join(TAG_JOIN, "/join " + room_name);
+  Message rlogin(TAG_RLOGIN, username);
+  Message join(TAG_JOIN, room_name);
 
   if (!conn.send(rlogin)) { //Error sending login
     /** TODO: figure out how to handle send error 
@@ -44,6 +44,9 @@ int main(int argc, char **argv) {
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
+  Message msg;
+
+  int err = 0;
   while(1) {
     /** TODO: how to recieve messages
         - use messageQueue?
@@ -55,8 +58,34 @@ int main(int argc, char **argv) {
         - end command to end while loop
     */
 
-    
+    if (!conn.receive(msg)) {
+      err = 1;
+      break;
+    } 
+    else {
 
+      if (msg.tag != TAG_DELIVERY) {
+        err = 1;
+        break;
+      } 
+      
+      vector<string> loadData = msg.split_payload();
+
+      if (loadData.size() != 3) { 
+        err = 1;
+        break;
+      }
+
+      string room = loadData[0];
+      string sender = loadData[1];
+      string text = loadDAta[2];
+      std::cout << sender << ":" << text << endl;
+    }
+  }
+
+  if (err == 1) {
+    std::cerr << msg.m_last_result << endl;
+    conn.close();
   }
 
 

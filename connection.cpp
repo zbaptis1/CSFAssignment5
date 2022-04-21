@@ -40,26 +40,28 @@ void Connection::close() { // idk
     /** TODO: how to close connection */
     close(m_fd); /** TODO: find out the "special" case and how it changes this */
   }
+
+  m_fd = -1;
 }
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
   std::vector<std::string> splitPayload = msg.split_payload(); /** TODO: might be split already */
   
-  if (splitPayload[0].equals(TAG_ERR)) { //Error checking 
-    if (splitPayload[1].find("ERROR") != std::string::npos) { /** TODO: see if there are distinct errors for result */
+  if (msh.tag.equals(TAG_ERR)) { //Error checking 
+    if (splitPayload[0].find("ERROR") != std::string::npos) { /** TODO: see if there are distinct errors for result  REFLECT IN SPLIT PAYLOAD FOR INDICY 0*/
       m_last_result = INVALID_MSG; /** TODO: Might be EOFORERROR instead */
       return false; 
     }
   }
   
-  string tagAndPayStr = msg.tag + ":" + msg.data; //Convert string to const char* for rio_written 2nd param
+  string tagAndPayStr = msg.tag + ":" + msg.data + "\n"; //Convert string to const char* for rio_written 2nd param
   const char * tagAndPayCharPtr = tagAndPayStr.c_str(); /** TODO: see if this will have null-terminator 
                                                                   (i.e '\0', important for strlen() function below */
-  ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayCharPtr)); // writes msg to server
+  ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayStr)); // writes msg to server
   /** rio_writen(m_fd, "\n", 1); TODO: MIGHT/MIGHT NOT BE NEEDED */
   
-  if (n < 1) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! */
+  if (n < 1 || strlen(tagAndPayStr) != n) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! */
     m_last_result = EOF_OR_ERROR;
     return false;
   }
@@ -87,19 +89,32 @@ bool Connection::receive(Message &msg) {
   }
 
   string bufStr(buf);
-  bufstr = trim.bufstr;
+  bufstr = trim(bufstr);
 
   /* 2 Invalid Case to handle: 
       1. if hold you don't have colon 
       2. (MAYBE) The tag must only require lower case characters
   */
-  if (!hasColon(bufstr) || !islowercased(bufstr)) {
+  if (!hasColon(bufstr)) {
     m_last_result = INVALID_MSG;
     return false;
   }
 
-  msg("", bufStr);
-  vector<string> vec = msg.split_payload();  
+  size_t colonPos = bufstr.find(":")
+  string tag = bufstr.substr(0, colonPos);
+
+  if(!islowercased(tag) {
+     m_last_result = INVALID_MSG;
+    return false;
+  }
+
+  string data = bufstr.substr(colonPos + 1, strlen(bufstr));
+  msg(tag, data);
+
+
+  msg.data = data;
+  //room:sender:text
+
 
   /** TODO: figure out what tag can be from response received from server 
             (My guess is either "ok" or "sendall") */
