@@ -31,6 +31,12 @@ int main(int argc, char **argv) {
   if (!conn.send(rlogin)) { //Error sending login
     /** TODO: figure out how to handle send error 
               Maybe it's printing to stdcerr??? */
+    conn.invalidSendOrRecieve();
+  }
+
+  if (!conn.recieve(rlogin)) { // Error recieving login
+  /** TODO: is this correct */
+      conn.invalidSendOrRecieve();
   }
 
   if (!conn.send(join)) { //Error sending join request
@@ -39,6 +45,11 @@ int main(int argc, char **argv) {
 
     /** PIAZZA: if the response is err, you must print 
     exactly the payload to stderr, with a single newline at the end. */
+    std::cerr << join.data << endl;
+  }
+
+  if (!conn.recieve(join)) { // Error recieving join request
+  /** TODO: is this correct */
     std::cerr << join.data << endl;
   }
 
@@ -93,8 +104,5 @@ int main(int argc, char **argv) {
     conn.close();
     return 1;
   }
-
-
-
   return 0;
 }
