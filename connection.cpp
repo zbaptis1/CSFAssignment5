@@ -124,3 +124,11 @@ bool Connection::receive(Message &msg) {
   // make sure that m_last_result is set appropriately
   return true;
 }
+
+// prints to stderr and closes the connection
+  // automatically returns 1
+int Connection::invalidSendOrRecieve() {
+  std::cerr << m_last_result() << endl;
+  this->close();
+  return 1;
+}
