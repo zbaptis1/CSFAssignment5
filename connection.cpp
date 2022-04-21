@@ -48,7 +48,7 @@ bool Connection::send(const Message &msg) {
   // TODO: send a message
   std::vector<std::string> splitPayload = msg.split_payload(); /** TODO: might be split already */
   
-  if (msh.tag.equals(TAG_ERR)) { //Error checking 
+  if (msg.tag.equals(TAG_ERR)) { //Error checking 
     if (splitPayload[0].find("ERROR") != std::string::npos) { /** TODO: see if there are distinct errors for result  REFLECT IN SPLIT PAYLOAD FOR INDICY 0*/
       m_last_result = INVALID_MSG; /** TODO: Might be EOFORERROR instead */
       return false; 
