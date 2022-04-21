@@ -40,7 +40,6 @@ void *worker(void *arg) {
   //       receiver, communicate with the client (implementing
   //       separate helper functions for each of these possibilities
   //       is a good idea)
-
   return nullptr;
 }
 
@@ -49,13 +48,13 @@ void *worker(void *arg) {
 ////////////////////////////////////////////////////////////////////////
 // Server member function implementation
 ////////////////////////////////////////////////////////////////////////
-
+/*
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
 
 
   ptthread_mutex_init(&m_lock, m_ssock); // OUR OWN TODO:: figure out mutex in threads
-}
+} */
 
 Server::~Server() {
   // TODO: destroy mutex
@@ -66,8 +65,8 @@ bool Server::listen() {
   //       if successful, false if not
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
-  int server_fd = open_listenfd(m_port);
-  if (server_fd < 0) { return false;}
+ /* int server_fd = open_listenfd(m_port);
+  if (server_fd < 0) { return false;} */
   
   return true;
 }
@@ -79,7 +78,7 @@ void Server::handle_client_requests() {
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 25}
 
-  int keep_going = 1;
+/*  int keep_going = 1;
   while (keep_going) {
 
 
@@ -89,12 +88,14 @@ void Server::handle_client_requests() {
       keep_going = chat_with_client(client_fd);
       close(client_fd);
     }
-  }
+  } */
 
-  
+  return;
 }
 
 Room *Server::find_or_create_room(const std::string &room_name) {
   // TODO: return a pointer to the unique Room object representing
   //       the named chat room, creating a new one if necessary
+
+  return nullptr;
 }

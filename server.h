@@ -6,11 +6,11 @@
 #include <pthread.h>
 class Room;
 
-//OUR OWN DATATYPES THAT'll HELP WITH SERVER 
+/*OUR OWN DATATYPES THAT'll HELP WITH SERVER 
 struct sockaddr {
   //TODO:: figure out the content of this server-side struct
   
-}
+}*/
 
 class Server {
 public:
