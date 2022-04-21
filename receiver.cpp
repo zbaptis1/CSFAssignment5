@@ -28,29 +28,29 @@ int main(int argc, char **argv) {
   Message rlogin(TAG_RLOGIN, username);
   Message join(TAG_JOIN, room_name);
 
+
   if (!conn.send(rlogin)) { //Error sending login
-    /** TODO: figure out how to handle send error 
-              Maybe it's printing to stdcerr??? */
-    conn.invalidSendOrRecieve();
-  }
+    std::cerr << rlogin.data << endl;
+    conn.close();
+    return 1;
+  } 
 
   if (!conn.recieve(rlogin)) { // Error recieving login
-  /** TODO: is this correct */
-      conn.invalidSendOrRecieve();
+      std::cerr << rlogin.data << endl;
+      conn.close();
+      return 1;
   }
 
   if (!conn.send(join)) { //Error sending join request
-    /** TODO: figure out how to handle send error 
-              Maybe it's printing to stdcerr??? */
-
-    /** PIAZZA: if the response is err, you must print 
-    exactly the payload to stderr, with a single newline at the end. */
     std::cerr << join.data << endl;
+    conn.close();
+    return 1;
   }
 
   if (!conn.recieve(join)) { // Error recieving join request
-  /** TODO: is this correct */
     std::cerr << join.data << endl;
+    conn.close();
+    return 1;
   }
 
   // TODO: loop waiting for messages from server
@@ -96,8 +96,7 @@ int main(int argc, char **argv) {
   }
 
   if (err == 1) {
-    std::cerr << msg.m_last_result << endl;
-    conn.close();
+    conn.invalidSendOrRecieve();
     return 1;
   }
   return 0;
