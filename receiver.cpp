@@ -58,27 +58,32 @@ int main(int argc, char **argv) {
         - end command to end while loop
     */
 
+    // it should return Non-Zero instead of breaking when err == 1 right?
+
     if (!conn.receive(msg)) {
       err = 1;
-      break;
+      return 1;
+     // break;
     } 
     else {
 
       if (msg.tag != TAG_DELIVERY) {
         err = 1;
-        break;
+        return 1;
+        // break;
       } 
       
       vector<string> loadData = msg.split_payload();
 
       if (loadData.size() != 3) { 
         err = 1;
-        break;
+        return 1;
+        // break;
       }
 
       string room = loadData[0];
       string sender = loadData[1];
-      string text = loadDAta[2];
+      string text = loadData[2];
       std::cout << sender << ":" << text << endl;
     }
   }
@@ -86,6 +91,7 @@ int main(int argc, char **argv) {
   if (err == 1) {
     std::cerr << msg.m_last_result << endl;
     conn.close();
+    return 1;
   }
 
 
