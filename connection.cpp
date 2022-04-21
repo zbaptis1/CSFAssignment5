@@ -19,6 +19,7 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
     std::cerr << "Couldn't connect to server";
     return();
   }
+  
   // TODO: call rio_readinitb to initialize the rio_t object
   rio_readinitb(&m_fdbuf, m_fd); /** TODO: see if this is unneces. duplicate of constructor*/
 }
