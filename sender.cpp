@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
   // TODO: send slogin message
   Message slogin(TAG_SLOGIN, username); 
 
-  if (!conn.send(slogin)) conn.invalidSendOrRecieve();//Error sending login
-  if (!conn.recieve(slogin)) conn.invalidSendOrRecieve(); // Error recieving login
+  if (!conn.send(slogin)) return conn.invalidSendOrRecieve(); //Error sending login
+  if (!conn.recieve(slogin)) return conn.invalidSendOrRecieve(); // Error recieving login
   
   // TODO: loop reading commands from user, sending messages to server as appropriate
   while (1) {
@@ -39,7 +39,6 @@ int main(int argc, char **argv) {
     std::getLine(std::cin, line); // gets user input
     line = trim(line); // get rid of whitespace
     
-    /** TODO: ZYAN 1. what happens with issues with sending a command*/
     if (line[0] == '/') { // for commands 
       std::string command = line.substr(1, line.length());
 
@@ -48,20 +47,20 @@ int main(int argc, char **argv) {
         if (roomName == "") { // Missing room name
           std::cerr << "Needs a room name: ./join [room name]\n";
         } else { // send message
-          if (!conn.send(Message(TAG_JOIN, roomName))) conn.invalidSendOrRecieve(); 
+          if (!conn.send(Message(TAG_JOIN, roomName))) std::cerr << "Send Failed"<< endl;
+          /** TODO: should we close connection or leave it open ? */
         }
       } 
 
       else if (line.substr(1, 6) == "leave") { // leave
-        if (!conn.send(Message(TAG_LEAVE, "left room"))) conn.invalidSendOrRecieve();   // Error sending message
-        break;
+        if (!conn.send(Message(TAG_LEAVE, "left room"))) std::cerr << "Send Failed" << endl;  // Error sending message
+         /** TODO: should we close connection or leave it open ? */
       } 
 
       else if (line.substr(1, 5) == "quit") { // quit: send message to signify quit
-        if (!conn.send(Message(TAG_QUIT, "quit room"))) conn.invalidSendOrRecieve(); 
-        break;
+        if (!conn.send(Message(TAG_QUIT, "quit room"))) std::cerr << "Send Failed" << endl; /** TODO: should we close connection or leave it open ? */
+        else { break; } // successfully quit
       } 
-
       else { // invalid commands
         std::cerr << "-Invalid command-\n" << "Valid Commands: /join /leave /quit\n"; 
       }
@@ -71,8 +70,7 @@ int main(int argc, char **argv) {
       if (!conn.send(Message(TAG_SENDALL, line)) { //Error sending message
         // std::cerr << conn.m_last_result() << endl;
         // conn.close();
-        conn.invalidSendOrRecieve(); /** TODO: same logic for code, change name of this function ??? */
-        return 1;
+        return conn.invalidSendOrRecieve(); /** TODO: same logic for code, change name of this function ??? */
       }
     }
   } //end of while
