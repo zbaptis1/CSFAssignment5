@@ -1,7 +1,4 @@
 #include <algorithm>
-#include <vector>
-#include <string>
-
 #include "message.h"
 
 std::vector<std::string> Message::split_payload() const {
@@ -12,31 +9,36 @@ std::vector<std::string> Message::split_payload() const {
     if ((tag.size() + data.size()) > 253) { // 253 to account for colon and "\n"
       result[0] = "ERROR The given message was longer than 255 bytes"; 
       return result;
-    }
+    } 
     
     // A message must be a single line of text with no newline characters contained within it.
-    int newLineCount = std::count(tag.begin(), tag.end(), "\n");
-    if (newLineCount < 1 || (data.find(":") == std::string::npos)) { 
-      result[0] = "ERROR no newline character or no color separartor"; 
+    int newLineCount = std::count(tag.cbegin(), tag.cend(), '\n');
+    if (newLineCount < 1) { 
+      result[0] = "ERROR no newline character"; 
       return result;
+    } 
+
+    if (data.find(":") == std::string::npos) {
+        result[0] = "ERROR no colon separator"; 
+        return result;
     }
     
     // The tag must be one of the operations specified in the “tag table”.
-    std::vector<std::string> tagTable = {TAG_ERR, TAG_OK, TAG_SLOGIN, TAG_RLOGIN, TAG_JOIN, 
-                                        TAG_LEAVE, TAG_SENDALL, TAG_SENDUSER, TAG_QUIT, 
-                                        TAG_DELIVERY, TAG_EMPTY};
-    if (std::find(tagTable.begin(), tagTable.end(), tag) == tagTable.end()) { 
+    if (tag != TAG_ERR && tag != TAG_OK && tag != TAG_SLOGIN && tag != TAG_RLOGIN
+        && tag != TAG_JOIN && tag != TAG_LEAVE && tag != TAG_SENDALL && tag != TAG_SENDUSER
+        && tag != TAG_QUIT && tag != TAG_DELIVERY && tag != TAG_EMPTY) {
       result[0] = "ERROR The given tag was not apart of the tag table"; 
       return result;
-    } // tag is not in tag table
+    }
+    
 
     // The payload is an arbitrary sequence of characters. If a tag has a structured payload, the payload must be formatted exactly as specified.
     if (tag == TAG_DELIVERY) { // room:sender:message_text;
-      if (std::count(data.begin(), data.end(), ':') != 2) {
+      if (std::count(data.cbegin(), data.cend(), ':') != 2) {
         result[0] = "ERROR The given message payload was not structured correctly"; 
         return result;
       }
-    }
+    } 
 
     std::string copy = data; //Copy data into copy
     std::string splitData = "";
@@ -54,9 +56,9 @@ std::vector<std::string> Message::split_payload() const {
 
     // no more colons, we already got the tag in result[0]
     // puts the payload into result, and not the "\n"
-    if ((pos = copy.find("\r\n")) != std::string::npos) {
+    if (copy.find("\r\n") != std::string::npos) {
       result[index] = copy.substr(0, copy.size() - 4);
-    } else if ((pos = copy.find("\n")) != std::string::npos) {
+    } else if (copy.find("\n") != std::string::npos) {
       result[index] = copy.substr(0, copy.size() - 2);
     }
     
