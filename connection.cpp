@@ -1,7 +1,9 @@
 #include <sstream>
+#include <iostream>
 #include <cctype>
 #include <cassert>
 #include "csapp.h"
+#include "client_util.h"
 #include "message.h"
 #include "connection.h"
 
@@ -16,10 +18,10 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
   // TODO: call open_clientfd to connect to the server
 
   /** TODO: */
-  m_fd = open_clientfd(hostname, port);
+  m_fd = open_clientfd(hostname.c_str(), port);
   if (!is_open()) {
     std::cerr << "Couldn't connect to server";
-    return();
+    return;
   }
   
   // TODO: call rio_readinitb to initialize the rio_t object
@@ -39,7 +41,7 @@ bool Connection::is_open() const {
 void Connection::close() {
   // TODO: close the connection if it is open
   if (is_open()) {
-    close(m_fd); 
+    ::close(m_fd); 
     m_fd = -1;
   }
 }
@@ -47,7 +49,7 @@ void Connection::close() {
 bool Connection::send(const Message &msg) {
   // TODO: send a message
   if (!is_open()) { 
-    std::cerr << "Connection was not open" << endl;
+    std::cerr << "Connection was not open" << std::endl;
     return false; 
   }
 
@@ -58,7 +60,7 @@ bool Connection::send(const Message &msg) {
       return false; 
   }
   
-  string tagAndPayStr = msg.tag + ":" + msg.data + "\n"; //Convert string to const char* for rio_written 2nd param
+  std::string tagAndPayStr = msg.tag + ":" + msg.data + "\n"; //Convert string to const char* for rio_written 2nd param
   const char * tagAndPayCharPtr = tagAndPayStr.c_str(); /** TODO: see if this will have null-terminator 
                                                                   (i.e '\0', important for strlen() function below */
   ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayStr)); // writes msg to server
@@ -78,12 +80,11 @@ bool Connection::send(const Message &msg) {
 bool Connection::receive(Message &msg) {
   // TODO: send a message, storing its tag and data in msg
   if (!is_open()) { 
-    std::cerr << "Connection was not open" << endl;
+    std::cerr << "Connection was not open" << std::endl;
     return false; 
   }
   // read response from server
-  msg("", "");
-  string tag;
+  std::string tag;
 
   char buf[1000];
   ssize_t n = rio_readlineb(&m_fdbuf, buf, sizeof(buf));
@@ -94,30 +95,30 @@ bool Connection::receive(Message &msg) {
     return false;
   }
 
-  string bufStr(buf);
-  bufstr = trim(bufstr);
+  std::string bufStr(buf);
+  bufStr = trim(bufStr);
 
   /* 2 Invalid Case to handle: 
       1. if hold you don't have colon 
       2. (MAYBE) The tag must only require lower case characters
   */
-  if (!hasColon(bufstr)) {
+  if (!hasColon(bufStr)) {
     msg.tag = TAG_ERR;
     m_last_result = INVALID_MSG;
     return false;
   }
 
-  size_t colonPos = bufstr.find(":")
-  tag = bufstr.substr(0, colonPos);
+  size_t colonPos = bufStr.find(":");
+  tag = bufStr.substr(0, colonPos);
 
-  if(!islowercased(tag) {
+  if(!islowercased(tag)) {
     msg.tag = TAG_ERR;
     m_last_result = INVALID_MSG;
     return false;
   }
-  string data = bufstr.substr(colonPos + 1, strlen(bufstr));
+  std::string data = bufStr.substr(colonPos + 1, strlen(bufStr));
 
-  msg.tag = tag
+  msg.tag = tag;
   msg.data = data;
   //room:sender:text
 
@@ -134,7 +135,7 @@ bool Connection::receive(Message &msg) {
 // prints to stderr and closes the connection
   // automatically returns 1
 int Connection::invalidSendOrRecieve() {
-  std::cerr << m_last_result() << endl;
+  std::cerr << m_last_result << std::endl;
   close();
   return 1;
 }
