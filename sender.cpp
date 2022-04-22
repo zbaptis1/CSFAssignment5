@@ -27,30 +27,20 @@ int main(int argc, char **argv) {
   
   // TODO: send slogin message
   Message slogin(TAG_SLOGIN, username); 
-  /** TODO: move the following if statement into a method; its used a lot */
-  if (!conn.send(slogin)) { //Error sending login
-  /** TODO: is this correct */
-      conn.invalidSendOrRecieve();
-  }
 
-  if (!conn.recieve(slogin)) { // Error recieving login
-  /** TODO: is this correct */
-      conn.invalidSendOrRecieve();
-  }
-
+  if (!conn.send(slogin)) conn.invalidSendOrRecieve();//Error sending login
+  if (!conn.recieve(slogin)) conn.invalidSendOrRecieve(); // Error recieving login
+  
   // TODO: loop reading commands from user, sending messages to server as appropriate
   while (1) {
-    // Format:> [insert user input] \n
-    std::cout << "> ";
+    std::cout << "> ";  // Format:> [insert user input] \n
     std::string line; 
 
     std::getLine(std::cin, line); // gets user input
     line = trim(line); // get rid of whitespace
     
-  /** TODO: ZYAN
-  1. what happens with issues with sending a command
-  */
-    if (line[0] == '/') { // for commands
+    /** TODO: ZYAN 1. what happens with issues with sending a command*/
+    if (line[0] == '/') { // for commands 
       std::string command = line.substr(1, line.length());
 
       if (line.substr(1, 5) == "join") { // join
@@ -58,23 +48,17 @@ int main(int argc, char **argv) {
         if (roomName == "") { // Missing room name
           std::cerr << "Needs a room name: ./join [room name]\n";
         } else { // send message
-          if (!conn.send(Message(TAG_JOIN, roomName))) { // Error sending message
-            std::cerr << conn.m_last_result() << endl;
-          }
+          if (!conn.send(Message(TAG_JOIN, roomName))) conn.invalidSendOrRecieve(); 
         }
       } 
 
       else if (line.substr(1, 6) == "leave") { // leave
-        if (!conn.send(Message(TAG_LEAVE, "left room"))) { // Error sending message
-          std::cerr << conn.m_last_result() << endl;
-        }
+        if (!conn.send(Message(TAG_LEAVE, "left room"))) conn.invalidSendOrRecieve();   // Error sending message
+        break;
       } 
 
-      else if (line.substr(1, 5) == "quit") { // quit
-        // send message to signify quit
-        if (!conn.send(Message(TAG_QUIT, "quit room"))) { // Error sending message
-          std::cerr << conn.m_last_result() << endl;
-        }
+      else if (line.substr(1, 5) == "quit") { // quit: send message to signify quit
+        if (!conn.send(Message(TAG_QUIT, "quit room"))) conn.invalidSendOrRecieve(); 
         break;
       } 
 
@@ -85,12 +69,14 @@ int main(int argc, char **argv) {
     
     else { // regular messages
       if (!conn.send(Message(TAG_SENDALL, line)) { //Error sending message
-        std::cerr << conn.m_last_result() << endl;
-        conn.close();
+        // std::cerr << conn.m_last_result() << endl;
+        // conn.close();
+        conn.invalidSendOrRecieve(); /** TODO: same logic for code, change name of this function ??? */
         return 1;
       }
     }
-  }
-  conn.close();
+  } //end of while
+
+  conn.close(); /** TODO: see if this close is necessary */
   return 0;
 }
