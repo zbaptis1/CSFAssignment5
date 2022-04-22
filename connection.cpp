@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cctype>
 #include <cassert>
+#include <string>
 #include "csapp.h"
 #include "client_util.h"
 #include "message.h"
