@@ -28,7 +28,7 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
 
 Connection::~Connection() {
   // TODO: close the socket if it is open
-  this->close();
+  close();
 }
 
 bool Connection::is_open() const {
@@ -36,7 +36,7 @@ bool Connection::is_open() const {
   return (m_fd >= 0);
 }
 
-void Connection::close() { // idk
+void Connection::close() {
   // TODO: close the connection if it is open
   if (is_open()) {
     close(m_fd); 
@@ -46,6 +46,11 @@ void Connection::close() { // idk
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
+  if (!is_open()) { 
+    std::cerr << "Connection was not open" << endl;
+    return false; 
+  }
+
   std::vector<std::string> splitPayload = msg.split_payload(); /** TODO: might be split already */
   
   if (splitPayload[0].find("ERROR") != std::string::npos) { // there was an error
@@ -72,11 +77,10 @@ bool Connection::send(const Message &msg) {
 
 bool Connection::receive(Message &msg) {
   // TODO: send a message, storing its tag and data in msg
-
-  /** TODO: No need for init, use class field (REPLACE EVERY INSTANCE OF rio with m_fdbuf)*/
-  // rio_t rio;
-  // rio_readinitb(&rio, m_fd); 
-
+  if (!is_open()) { 
+    std::cerr << "Connection was not open" << endl;
+    return false; 
+  }
   // read response from server
   msg("", "");
   string tag;
@@ -129,7 +133,8 @@ bool Connection::receive(Message &msg) {
 
 // prints to stderr and closes the connection
   // automatically returns 1
-void Connection::invalidSendOrRecieve() {
+int Connection::invalidSendOrRecieve() {
   std::cerr << m_last_result() << endl;
-  this->close();
+  close();
+  return 1;
 }

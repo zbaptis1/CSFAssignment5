@@ -41,8 +41,8 @@ public:
   bool send(const Message &msg);
   bool receive(Message &msg);
 
-  // prints to stderr and closes the connection
-  void invalidSendOrRecieve();
+  // prints to stderr and closes the connection, returns 1
+  int invalidSendOrRecieve();
 
 
   Result get_last_result() const { return m_last_result; }
