@@ -16,9 +16,10 @@ Connection::Connection(int fd): m_fd(fd), m_last_result(SUCCESS) {
 
 void Connection::connect(const std::string &hostname, int port) { // used sockets.zip
   // TODO: call open_clientfd to connect to the server
+  std::string portStr = "" + port;
 
-  /** TODO: */
-  m_fd = open_clientfd(hostname.c_str(), port);
+  /** TODO: need to convert hostname and port to char* */
+  m_fd = open_clientfd(hostname.c_str(), portStr.c_str());
   if (!is_open()) {
     std::cerr << "Couldn't connect to server";
     return;
@@ -30,7 +31,7 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
 
 Connection::~Connection() {
   // TODO: close the socket if it is open
-  close();
+  this->close(); /** TODO: should this be close(m_fd) ??? */
 }
 
 bool Connection::is_open() const {
@@ -63,10 +64,10 @@ bool Connection::send(const Message &msg) {
   std::string tagAndPayStr = msg.tag + ":" + msg.data + "\n"; //Convert string to const char* for rio_written 2nd param
   const char * tagAndPayCharPtr = tagAndPayStr.c_str(); /** TODO: see if this will have null-terminator 
                                                                   (i.e '\0', important for strlen() function below */
-  ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayStr)); // writes msg to server
+  ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayCharPtr)); // writes msg to server
   /** rio_writen(m_fd, "\n", 1); TODO: MIGHT/MIGHT NOT BE NEEDED */
   
-  if (n < 1 || strlen(tagAndPayStr) != n) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! */
+  if (n < 1 || strlen(tagAndPayCharPtr) != n) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! */
     m_last_result = EOF_OR_ERROR;
     return false;
   }
@@ -116,7 +117,7 @@ bool Connection::receive(Message &msg) {
     m_last_result = INVALID_MSG;
     return false;
   }
-  std::string data = bufStr.substr(colonPos + 1, strlen(bufStr));
+  std::string data = bufStr.substr(colonPos + 1, bufStr.size()); /** TODO: strlen() or STRING.size ??? (check if neither count null terminator) */
 
   msg.tag = tag;
   msg.data = data;
