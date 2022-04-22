@@ -12,8 +12,7 @@ std::string ltrim(const std::string &s);
 std::string rtrim(const std::string &s);
 std::string trim(const std::string &s);
 
-// you can add additional declarations here...
-bool islowercased(std::string &s);
-bool hasColon(std::string &s);
+bool isLowerCased(const std::string &s);
+bool hasColon(const std::string &s);
 
 #endif // CLIENT_UTIL_H

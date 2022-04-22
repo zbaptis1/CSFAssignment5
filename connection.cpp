@@ -87,7 +87,7 @@ bool Connection::receive(Message &msg) {
   }
   // read response from server
   std::string tag;
-
+  std::string data;
   char buf[1000];
   ssize_t n = rio_readlineb(&m_fdbuf, buf, sizeof(buf));
 
@@ -97,8 +97,9 @@ bool Connection::receive(Message &msg) {
     return false;
   }
 
+
+  const trim(bufStr);
   std::string bufStr(buf);
-  bufStr = trim(bufStr);
 
   /* 2 Invalid Case to handle: 
       1. if hold you don't have colon 
@@ -113,12 +114,13 @@ bool Connection::receive(Message &msg) {
   size_t colonPos = bufStr.find(":");
   tag = bufStr.substr(0, colonPos);
 
-  if(!islowercased(tag)) {
+  if(!isLowerCased(tag)) {
     msg.tag = TAG_ERR;
     m_last_result = INVALID_MSG;
     return false;
   }
-  std::string data = bufStr.substr(colonPos + 1, bufStr.size()); /** TODO: strlen() or STRING.size ??? (check if neither count null terminator) */
+  
+  data = bufStr.substr(colonPos + 1, bufStr.size()); /** TODO: strlen() or STRING.size ??? (check if neither count null terminator) */
 
   msg.tag = tag;
   msg.data = data;
@@ -138,6 +140,6 @@ bool Connection::receive(Message &msg) {
   // automatically returns 1
 int Connection::invalidSendOrRecieve() {
   std::cerr << m_last_result << std::endl;
-  close();
+  this->close();
   return 1;
 }

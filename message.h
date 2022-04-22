@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "client_util.h"
 
 // standard message tags (note that you don't need to worry about
 // "senduser" or "empty" messages)

@@ -48,13 +48,13 @@ void *worker(void *arg) {
 ////////////////////////////////////////////////////////////////////////
 // Server member function implementation
 ////////////////////////////////////////////////////////////////////////
-/*
+
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
+  
 
-
-  ptthread_mutex_init(&m_lock, m_ssock); // OUR OWN TODO:: figure out mutex in threads
-} */
+  // ptthread_mutex_init(&m_lock, m_ssock); // OUR OWN TODO:: figure out mutex in threads
+} 
 
 Server::~Server() {
   // TODO: destroy mutex

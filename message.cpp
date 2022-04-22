@@ -1,5 +1,7 @@
 #include <algorithm>
 #include "message.h"
+#include "client_util.h"
+
 
 std::vector<std::string> Message::split_payload() const {
     std::vector<std::string> result;

@@ -23,13 +23,13 @@ std::string trim(const std::string &s) {
   return rtrim(ltrim(s));
 }
 
-bool islowercased(string &s) {
+bool isLowerCased(const std::string &s) {
   for(char c : s) 
     if (!(c >= 'a' and c <= 'z')) return false;
   
   return true;
 }
 
-bool hasColon(string &s) {
+bool hasColon(const std::string &s) {
   return s.find(":") != std::string::npos;
 }
