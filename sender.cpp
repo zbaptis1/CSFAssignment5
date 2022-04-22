@@ -17,8 +17,6 @@ int main(int argc, char **argv) {
   int server_port = std::stoi(argv[2]); /** TODO: use try-catch for error check maybe */
   std::string username = argv[3];
 
-  /** TODO: USE CONNECTION FUNCTIONALITY HERE */
-
   // TODO: connect to server
   Connection conn;
   conn.connect(server_hostname, server_port); // use sever socket to connect to server
@@ -40,8 +38,7 @@ int main(int argc, char **argv) {
       conn.invalidSendOrRecieve();
   }
 
-  // TODO: loop reading commands from user, sending messages to
-  //       server as appropriate
+  // TODO: loop reading commands from user, sending messages to server as appropriate
   while (1) {
     // Format:> [insert user input] \n
     std::cout << "> ";
@@ -50,9 +47,9 @@ int main(int argc, char **argv) {
     std::getLine(std::cin, line); // gets user input
     line = trim(line); // get rid of whitespace
     
-/** TODO: ZYAN
-1. what happens with issues with sending a command
-*/
+  /** TODO: ZYAN
+  1. what happens with issues with sending a command
+  */
     if (line[0] == '/') { // for commands
       std::string command = line.substr(1, line.length());
 

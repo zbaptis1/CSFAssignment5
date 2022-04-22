@@ -14,6 +14,8 @@ Connection::Connection(int fd): m_fd(fd), m_last_result(SUCCESS) {
 
 void Connection::connect(const std::string &hostname, int port) { // used sockets.zip
   // TODO: call open_clientfd to connect to the server
+
+  /** TODO: */
   m_fd = open_clientfd(hostname, port);
   if (!is_open()) {
     std::cerr << "Couldn't connect to server";
@@ -38,9 +40,8 @@ void Connection::close() { // idk
   // TODO: close the connection if it is open
   if (is_open()) {
     close(m_fd); 
+    m_fd = -1;
   }
-
-  m_fd = -1;
 }
 
 bool Connection::send(const Message &msg) {
