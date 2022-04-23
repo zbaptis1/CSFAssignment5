@@ -39,35 +39,46 @@ int main(int argc, char **argv) {
     std::getline(std::cin, line); // gets user input
     line = trim(line); // get rid of whitespace
     
-    if (line[0] == '/') { // for commands 
-      std::string command = line.substr(1, line.length());
+    if (line.length() != 0) { // non-empty lines
+      if (line[0] == '/') { // for commands 
+        std::string command = line.substr(1, line.length());
 
-      if (line.substr(1, 5) == "join") { // join
-        std::string roomName = line.substr(5, line.length());
-        if (roomName == "") { // Missing room name
-          std::cerr << "Needs a room name: ./join [room name]\n";
-        } else { // send message
-          if (!conn.send(Message(TAG_JOIN, roomName))) std::cerr << "Send Failed"<< std::endl;
+        if (line.substr(1, 5) == "join") { // join
+          std::string roomName = line.substr(5, line.length());
+          if (roomName == "") { // Missing room name
+            std::cerr << "Needs a room name: ./join [room name]\n";
+          } else { // send message
+            Message msg (TAG_JOIN, roomName);
+            if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
+            if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
+            /** TODO: should we close connection or leave it open ? */
+          }
+        } 
+
+        else if (line.substr(1, 6) == "leave") { // leave
+            Message msg (TAG_LEAVE, "left room");
+            if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
+            if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
           /** TODO: should we close connection or leave it open ? */
+        } 
+
+        else if (line.substr(1, 5) == "quit") { // quit: send message to signify quit
+           Message msg (TAG_QUIT, "quit room");
+            if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
+            else if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
+            else { break; }
+            /** TODO: should we close connection or leave it open ? */
+        } 
+        else { // invalid commands
+          std::cerr << "-Invalid command-\n" << "Valid Commands: /join /leave /quit\n"; 
         }
       } 
-
-      else if (line.substr(1, 6) == "leave") { // leave
-        if (!conn.send(Message(TAG_LEAVE, "left room"))) std::cerr << "Send Failed" << std::endl;  // Error sending message
-         /** TODO: should we close connection or leave it open ? */
-      } 
-
-      else if (line.substr(1, 5) == "quit") { // quit: send message to signify quit
-        if (!conn.send(Message(TAG_QUIT, "quit room"))) std::cerr << "Send Failed" << std::endl; /** TODO: should we close connection or leave it open ? */
-        else { break; } // successfully quit
-      } 
-      else { // invalid commands
-        std::cerr << "-Invalid command-\n" << "Valid Commands: /join /leave /quit\n"; 
+      else { // regular messages
+        Message msg (TAG_SENDALL, line);
+        if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
+        else if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
+        /** TODO: same logic for code, change name of this function ??? */
       }
-    } 
-    
-    else { // regular messages
-      if (!conn.send(Message(TAG_SENDALL, line))) return conn.invalidSendOrreceive(); /** TODO: same logic for code, change name of this function ??? */
     }
   } //end of while
 
