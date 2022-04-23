@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
   // TODO: send slogin message
   Message slogin(TAG_SLOGIN, username); 
 
-  if (!conn.send(slogin)) return conn.invalidSendOrRecieve(); //Error sending login
-  if (!conn.receive(slogin)) return conn.invalidSendOrRecieve(); // Error recieving login
+  if (!conn.send(slogin)) return conn.invalidSendOrreceive(); //Error sending login
+  if (!conn.receive(slogin)) return conn.invalidSendOrreceive(); // Error recieving login
   
   // TODO: loop reading commands from user, sending messages to server as appropriate
   while (1) {
@@ -67,10 +67,10 @@ int main(int argc, char **argv) {
     } 
     
     else { // regular messages
-      if (!conn.send(Message(TAG_SENDALL, line)) return conn.invalidSendOrRecieve(); /** TODO: same logic for code, change name of this function ??? */
+      if (!conn.send(Message(TAG_SENDALL, line))) return conn.invalidSendOrreceive(); /** TODO: same logic for code, change name of this function ??? */
     }
   } //end of while
 
-  conn.close(); /** TODO: see if this close is necessary */
+  // conn.close(); /** TODO: see if this close is necessary */
   return 0;
 }

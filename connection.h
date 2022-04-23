@@ -43,7 +43,7 @@ public:
   bool receive(Message &msg);
 
   // prints to stderr and closes the connection, returns 1
-  int invalidSendOrRecieve();
+  int invalidSendOrreceive();
 
 
   Result get_last_result() const { return m_last_result; }

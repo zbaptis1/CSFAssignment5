@@ -44,14 +44,14 @@ bool Connection::is_open() const {
 void Connection::close() {
   // TODO: close the connection if it is open
   if (is_open()) {
-    ::close(m_fd); 
+    close(m_fd); 
     m_fd = -1;
   }
 }
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
-  if (!is_open()) { 
+  if (!is_open()) {  /** TODO: condense into connection error handling func */
     std::cerr << "Connection was not open" << std::endl;
     return false; 
   }
@@ -82,7 +82,7 @@ bool Connection::send(const Message &msg) {
 
 bool Connection::receive(Message &msg) {
   // TODO: send a message, storing its tag and data in msg
-  if (!is_open()) { 
+  if (!is_open()) { /** TODO: condense into connection error handling func */
     std::cerr << "Connection was not open" << std::endl;
     return false; 
   }
@@ -93,7 +93,7 @@ bool Connection::receive(Message &msg) {
   ssize_t n = rio_readlineb(&m_fdbuf, buf, sizeof(buf));
 
   if (n < 1) {
-    msg.tag = TAG_ERR; // message wasn't recieved 
+    msg.tag = TAG_ERR; // message wasn't received 
     m_last_result = EOF_OR_ERROR;
     return false;
   }
@@ -139,7 +139,7 @@ bool Connection::receive(Message &msg) {
 
 // prints to stderr and closes the connection
   // automatically returns 1
-int Connection::invalidSendOrRecieve() {
+int Connection::invalidSendOrreceive() {
   std::cerr << m_last_result << std::endl;
   this->close();
   return 1;

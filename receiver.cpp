@@ -21,6 +21,10 @@ int main(int argc, char **argv) {
   // TODO: connect to server
   Connection conn;
   conn.connect(server_hostname, server_port);
+  if (!conn.is_open()) {
+    std::cerr << "Couldn't connect to server\n";
+    return 1;
+  }
 
   // TODO: send rlogin and join messages (expect a response from
   //       the server for each one)
@@ -30,25 +34,25 @@ int main(int argc, char **argv) {
 
 
   if (!conn.send(rlogin)) { //Error sending login
-    std::cerr << rlogin.data << endl;
+    std::cerr << rlogin.data << std::endl;
     conn.close();
     return 1;
   } 
 
-  if (!conn.recieve(rlogin)) { // Error recieving login
-      std::cerr << rlogin.data << endl;
+  if (!conn.receive(rlogin)) { // Error recieving login
+      std::cerr << rlogin.data << std::endl;
       conn.close();
       return 1;
   }
 
   if (!conn.send(join)) { //Error sending join request
-    std::cerr << join.data << endl;
+    std::cerr << join.data << std::endl;
     conn.close();
     return 1;
   }
 
-  if (!conn.recieve(join)) { // Error recieving join request
-    std::cerr << join.data << endl;
+  if (!conn.receive(join)) { // Error recieving join request
+    std::cerr << join.data << std::endl;
     conn.close();
     return 1;
   }
@@ -59,7 +63,7 @@ int main(int argc, char **argv) {
 
   int err = 0;
   while(1) {
-    /** TODO: how to recieve messages
+    /** TODO: how to receive messages
         - use messageQueue?
         - change the tag of these messages to TAG_DELIVERY?
         - where do these messages output?
@@ -81,23 +85,22 @@ int main(int argc, char **argv) {
         break;
       } 
       
-      vector<string> loadData = msg.split_payload();
+      std::vector<std::string> loadData = msg.split_payload();
 
       if (loadData.size() != 3) { 
         err = 1;
         break;
       }
 
-      string room = loadData[0];
-      string sender = loadData[1];
-      string text = loadData[2];
-      std::cout << sender << ":" << text << endl;
+      std::string room = loadData[0];
+      std::string sender = loadData[1];
+      std::string text = loadData[2];
+      std::cout << sender << ":" << text << std::endl;
     }
   }
 
   if (err == 1) {
-    conn.invalidSendOrRecieve();
-    return 1;
+    return conn.invalidSendOrreceive();
   }
   return 0;
 }
