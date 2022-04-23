@@ -44,7 +44,7 @@ bool Connection::is_open() const {
 void Connection::close() {
   // TODO: close the connection if it is open
   if (is_open()) {
-    close(m_fd); 
+    ::close(m_fd); 
     m_fd = -1;
   }
 }
