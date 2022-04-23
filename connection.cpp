@@ -4,9 +4,10 @@
 #include <cassert>
 #include <string>
 #include "csapp.h"
-#include "client_util.h"
 #include "message.h"
 #include "connection.h"
+#include "client_util.h"
+
 
 Connection::Connection(): m_fd(-1), m_last_result(SUCCESS) {}
 
@@ -98,8 +99,8 @@ bool Connection::receive(Message &msg) {
   }
 
 
-  const trim(bufStr);
-  std::string bufStr(buf);
+  const std::string newStr(buf);
+  std::string bufStr = trim(newStr);
 
   /* 2 Invalid Case to handle: 
       1. if hold you don't have colon 

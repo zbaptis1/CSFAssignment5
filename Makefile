@@ -17,7 +17,7 @@ CXX_RECEIVER_SRCS = receiver.cpp
 CXX_RECEIVER_OBJS = $(CXX_RECEIVER_SRCS:.cpp=.o)
 
 # C++ source/object files used only for the sender
-CXX_SENDER_SRCS = sender.cpp
+CXX_SENDER_SRCS = sender.cpp 
 CXX_SENDER_OBJS = $(CXX_SENDER_SRCS:.cpp=.o)
 
 # Common C++ source/object files used by both server
