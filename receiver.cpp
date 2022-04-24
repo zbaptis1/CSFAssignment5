@@ -32,75 +32,55 @@ int main(int argc, char **argv) {
   Message rlogin(TAG_RLOGIN, username);
   Message join(TAG_JOIN, room_name);
 
-
   if (!conn.send(rlogin)) { //Error sending login
-    std::cerr << rlogin.data << std::endl;
+    std::cerr << rlogin.getData() << std::endl;
     conn.close();
     return 1;
   } 
-
-  if (!conn.receive(rlogin)) { // Error recieving login
-      std::cerr << rlogin.data << std::endl;
+  
+  conn.receive(rlogin);
+  if (rlogin.tag != "ok") { /** TODO: Error checking */
+      std::cerr << rlogin.getData() << std::endl;
       conn.close();
       return 1;
   }
 
   if (!conn.send(join)) { //Error sending join request
-    std::cerr << join.data << std::endl;
+    std::cerr << join.getData() << std::endl;
     conn.close();
-    return 1;
+    return 2;
   }
-
-  if (!conn.receive(join)) { // Error recieving join request
-    std::cerr << join.data << std::endl;
+  conn.receive(join);
+  if (join.tag != "ok") { // Error recieving join request
+    std::cerr << join.getData() << std::endl;
     conn.close();
-    return 1;
+    return 2;
   }
 
   // TODO: loop waiting for messages from server
   //       (which should be tagged with TAG_DELIVERY)
   Message msg;
 
-  int err = 0;
   while(1) {
-    /** TODO: how to receive messages
-        - use messageQueue?
-        - change the tag of these messages to TAG_DELIVERY?
-        - where do these messages output?
 
+    conn.receive(msg);
+    if (msg.getTag() != "ok") { 
+      std::cerr << msg.getData() << std::endl;
+    }
 
-
-        - end command to end while loop
-    */
-
-
-    if (!conn.receive(msg)) {
-      err = 1;
-      break;
+    if (msg.getTag() != TAG_DELIVERY) { 
+      std::cerr << msg.getData() << std::endl;
     } 
-    else {
+    
+    std::vector<std::string> loadData = msg.split_payload();
 
-      if (msg.tag != TAG_DELIVERY) {
-        err = 1;
-        break;
-      } 
-      
-      std::vector<std::string> loadData = msg.split_payload();
-
-      if (loadData.size() != 3) { 
-        err = 1;
-        break;
-      }
-
+    if (loadData.size() == 3) { 
       std::string room = loadData[0];
       std::string sender = loadData[1];
       std::string text = loadData[2];
-      std::cout << sender << ":" << text << std::endl;
+      std::cout << sender << ": " << text << std::endl;
     }
   }
-
-  if (err == 1) {
-    return conn.invalidSendOrreceive();
-  }
+  conn.close();
   return 0;
 }

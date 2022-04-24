@@ -28,9 +28,20 @@ int main(int argc, char **argv) {
   // TODO: send slogin message
   Message slogin(TAG_SLOGIN, username); 
 
-  if (!conn.send(slogin)) return conn.invalidSendOrreceive(); //Error sending login
-  if (!conn.receive(slogin)) return conn.invalidSendOrreceive(); // Error recieving login
-  
+  if (!conn.send(slogin)) {
+    std::cerr << slogin.getData() << std::endl;
+    conn.close();
+    return 1;
+  }
+
+  conn.receive(slogin);
+  if (slogin.getTag() != "ok") { /** TODO: Error checking */
+      std::cerr << slogin.getData() << std::endl;
+      conn.close();
+      return 1;
+  }
+
+
   // TODO: loop reading commands from user, sending messages to server as appropriate
   while (1) {
     std::cout << "> ";  // Format:> [insert user input] \n
@@ -44,44 +55,53 @@ int main(int argc, char **argv) {
         std::string command = line.substr(1, line.length());
 
         if (line.substr(1, 5) == "join") { // join
-          std::string roomName = line.substr(5, line.length());
+          std::string roomName = line.substr(5, line.length() - 1);
           if (roomName == "") { // Missing room name
             std::cerr << "Needs a room name: ./join [room name]\n";
           } else { // send message
             Message msg (TAG_JOIN, roomName);
-            if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
-            if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
-            /** TODO: should we close connection or leave it open ? */
+            if (!conn.send(msg)) { std::cerr << "Send Failed"<< std::endl; }
+            conn.receive(msg);
+            if (msg.getTag() != "ok") { 
+              std::cerr << msg.getData() << std::endl;
+            }
           }
         } 
 
         else if (line.substr(1, 6) == "leave") { // leave
             Message msg (TAG_LEAVE, "left room");
             if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
-            if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
-          /** TODO: should we close connection or leave it open ? */
+            conn.receive(msg);
+            if (msg.getTag() != "ok") { 
+              std::cerr << msg.getData() << std::endl;
+            }
         } 
 
         else if (line.substr(1, 5) == "quit") { // quit: send message to signify quit
            Message msg (TAG_QUIT, "quit room");
             if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
-            else if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
-            else { break; }
-            /** TODO: should we close connection or leave it open ? */
+            conn.receive(msg);
+            if (msg.getTag() != "ok") {
+              std::cerr << msg.getData() << std::endl;
+            }
+            break;
         } 
         else { // invalid commands
           std::cerr << "-Invalid command-\n" << "Valid Commands: /join /leave /quit\n"; 
         }
       } 
+
       else { // regular messages
         Message msg (TAG_SENDALL, line);
         if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
-        else if (!conn.receive(msg)) std::cerr << "Recieve Failed"<< std::endl;
-        /** TODO: same logic for code, change name of this function ??? */
+        conn.receive(msg);
+        if (msg.getTag() != "ok") { /** TODO: Error checking */
+              std::cerr << msg.getData() << std::endl;
+        }
       }
     }
   } //end of while
 
-  // conn.close(); /** TODO: see if this close is necessary */
+  conn.close();
   return 0;
 }

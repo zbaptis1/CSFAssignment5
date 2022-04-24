@@ -34,6 +34,9 @@ struct Message {
   Message(const std::string &tag, const std::string &data):  tag(tag), data(data) { }
 
   std::vector<std::string> split_payload() const;
+
+  std::string getData() { return data; }
+  std::string getTag() { return tag; } 
     
 };
 
