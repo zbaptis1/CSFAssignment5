@@ -67,7 +67,6 @@ bool Connection::send(const Message &msg) {
   const char * tagAndPayCharPtr = tagAndPayStr.c_str(); /** TODO: see if this will have null-terminator 
                                                                   (i.e '\0', important for strlen() function below */
   ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayCharPtr)); // writes msg to server
-  /** rio_writen(m_fd, "\n", 1); TODO: MIGHT/MIGHT NOT BE NEEDED */
   
   if (n < 1 || strlen(tagAndPayCharPtr) != n) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! */
     m_last_result = EOF_OR_ERROR;
@@ -76,7 +75,6 @@ bool Connection::send(const Message &msg) {
 
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately
-
   return true;
 }
 
@@ -97,7 +95,6 @@ bool Connection::receive(Message &msg) {
     m_last_result = EOF_OR_ERROR;
     return false;
   }
-
 
   const std::string newStr(buf);
   std::string bufStr = trim(newStr);
@@ -121,16 +118,10 @@ bool Connection::receive(Message &msg) {
     return false;
   }
   
-  data = bufStr.substr(colonPos + 1, bufStr.size()); /** TODO: strlen() or STRING.size ??? (check if neither count null terminator) */
+  data = bufStr.substr(colonPos + 1, bufStr.size() - 1); /** TODO: strlen() or STRING.size ??? (check if neither count null terminator) */
 
   msg.tag = tag;
   msg.data = data;
-  //room:sender:text
-
-
-  /** TODO: figure out what tag can be from response received from server 
-            (My guess is either "ok" or "sendall") */
-
 
   // return true if successful, false if not
   // make sure that m_last_result is set appropriately

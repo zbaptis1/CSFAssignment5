@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     line = trim(line); // get rid of whitespace
     
     if (line.length() != 0) { // non-empty lines
-      if (line[0] == '/') { // for commands 
+      if (line[0] == '/') { // for commands
         std::string command = line.substr(1, line.length());
 
         if (line.substr(1, 5) == "join") { // join
