@@ -45,7 +45,7 @@ public:
   // prints to stderr and closes the connection, returns 1
   int invalidSendOrreceive();
 
-
+  // getter for last result field
   Result get_last_result() const { return m_last_result; }
 
 private:

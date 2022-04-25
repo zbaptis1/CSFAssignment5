@@ -51,8 +51,6 @@ void *worker(void *arg) {
 
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
-  
-
   // ptthread_mutex_init(&m_lock, m_ssock); // OUR OWN TODO:: figure out mutex in threads
 } 
 
@@ -65,7 +63,7 @@ bool Server::listen() {
   //       if successful, false if not
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
- /* int server_fd = open_listenfd(m_port);
+    /* int server_fd = open_listenfd(m_port);
   if (server_fd < 0) { return false;} */
   
   return true;
@@ -78,16 +76,16 @@ void Server::handle_client_requests() {
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 25}
 
-/*  int keep_going = 1;
-  while (keep_going) {
+  /*  int keep_going = 1;
+    while (keep_going) {
 
 
-    // MAYBE LAST 2 ARGS AREN'T NECESSARY: Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
-    int client_fd = Accept(server_fd, NULL, NULL);
-    if (client_fd > 0) {
-      keep_going = chat_with_client(client_fd);
-      close(client_fd);
-    }
+      // MAYBE LAST 2 ARGS AREN'T NECESSARY: Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
+      int client_fd = Accept(server_fd, NULL, NULL);
+      if (client_fd > 0) {
+        keep_going = chat_with_client(client_fd);
+        close(client_fd);
+      }
   } */
 
   return;

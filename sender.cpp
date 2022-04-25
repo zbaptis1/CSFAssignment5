@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   int server_port = std::stoi(argv[2]); /** TODO: use try-catch for error check maybe */
   std::string username = argv[3];
 
-  // TODO: connect to server
+  // Connect to server
   Connection conn;
   conn.connect(server_hostname, server_port); // use sever socket to connect to server
   if (!conn.is_open()) {
@@ -25,25 +25,25 @@ int main(int argc, char **argv) {
     return 1;
   }
   
-  // TODO: send slogin message
+  // Send slogin message
   Message slogin(TAG_SLOGIN, username);
   Message emptySlogin;
 
-  if (!conn.send(slogin)) {
+  if (!conn.send(slogin)) { //Error logging in
     std::cerr << slogin.getData() << std::endl;
     conn.close();
     return 1;
   }
 
   conn.receive(emptySlogin);
-  if (emptySlogin.getTag() != "ok") { /** TODO: Error checking */
+  if (emptySlogin.getTag() != "ok") { // Error checking received tag from send req
       std::cerr << emptySlogin.getData() << std::endl;
       conn.close();
       return 1;
   }
 
 
-  // TODO: loop reading commands from user, sending messages to server as appropriate
+  // Loop reading commands from user, sending messages to server as appropriate
   while (1) {
     std::cout << "> ";  // Format:> [insert user input] \n
     std::cout.flush();

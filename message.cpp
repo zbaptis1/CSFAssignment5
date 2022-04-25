@@ -14,7 +14,6 @@ std::vector<std::string> Message::split_payload() const {
     } 
     
     // A message must be a single line of text with no newline characters contained within it.
-
     std::string tempData = trim(data);
 
     if (tempData.find('\n') != std::string::npos) {
