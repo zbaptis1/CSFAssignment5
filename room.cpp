@@ -4,9 +4,9 @@
 #include "user.h"
 #include "room.h"
 
-Room::Room(const std::string &room_name)
-  : room_name(room_name) {
+Room::Room(const std::string &room_name): room_name(room_name) {
   // TODO: initialize the mutex
+  lock(room_name); /** TODO: 
 }
 
 Room::~Room() {
