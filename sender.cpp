@@ -26,7 +26,8 @@ int main(int argc, char **argv) {
   }
   
   // TODO: send slogin message
-  Message slogin(TAG_SLOGIN, username); 
+  Message slogin(TAG_SLOGIN, username);
+  Message emptySlogin;
 
   if (!conn.send(slogin)) {
     std::cerr << slogin.getData() << std::endl;
@@ -34,9 +35,9 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  conn.receive(slogin);
-  if (slogin.getTag() != "ok") { /** TODO: Error checking */
-      std::cerr << slogin.getData() << std::endl;
+  conn.receive(emptySlogin);
+  if (emptySlogin.getTag() != "ok") { /** TODO: Error checking */
+      std::cerr << emptySlogin.getData() << std::endl;
       conn.close();
       return 1;
   }
@@ -45,6 +46,7 @@ int main(int argc, char **argv) {
   // TODO: loop reading commands from user, sending messages to server as appropriate
   while (1) {
     std::cout << "> ";  // Format:> [insert user input] \n
+    std::cout.flush();
     std::string line; 
 
     std::getline(std::cin, line); // gets user input
@@ -52,10 +54,10 @@ int main(int argc, char **argv) {
     
     if (line.length() != 0) { // non-empty lines
       if (line[0] == '/') { // for commands
-        std::string command = line.substr(1, line.length());
+        std::string command = line.substr(1);
 
-        if (line.substr(1, 5) == "join") { // join
-          std::string roomName = line.substr(5, line.length() - 1);
+        if (line.substr(1, 4) == "join") { // join
+          std::string roomName = line.substr(6);
           if (roomName == "") { // Missing room name
             std::cerr << "Needs a room name: ./join [room name]\n";
           } else { // send message
@@ -68,7 +70,7 @@ int main(int argc, char **argv) {
           }
         } 
 
-        else if (line.substr(1, 6) == "leave") { // leave
+        else if (line.substr(1, 5) == "leave") { // leave
             Message msg (TAG_LEAVE, "left room");
             if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
             conn.receive(msg);
@@ -77,7 +79,7 @@ int main(int argc, char **argv) {
             }
         } 
 
-        else if (line.substr(1, 5) == "quit") { // quit: send message to signify quit
+        else if (line.substr(1, 4) == "quit") { // quit: send message to signify quit
            Message msg (TAG_QUIT, "quit room");
             if (!conn.send(msg)) std::cerr << "Send Failed"<< std::endl;
             conn.receive(msg);

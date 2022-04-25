@@ -20,7 +20,6 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
   // TODO: call open_clientfd to connect to the server
   std::string portStr = std::to_string(port);
 
-  /** TODO: need to convert hostname and port to char* */
   m_fd = open_clientfd(hostname.c_str(), portStr.c_str());
   if (!is_open()) {
     std::cerr << "Couldn't connect to server";
@@ -28,12 +27,12 @@ void Connection::connect(const std::string &hostname, int port) { // used socket
   }
   
   // TODO: call rio_readinitb to initialize the rio_t object
-  rio_readinitb(&m_fdbuf, m_fd); /** TODO: see if this is unneces. duplicate of constructor*/
+  rio_readinitb(&m_fdbuf, m_fd); 
 }
 
 Connection::~Connection() {
   // TODO: close the socket if it is open
-  this->close(); /** TODO: should this be close(m_fd) ??? */
+  this->close(); 
 }
 
 bool Connection::is_open() const {
@@ -51,57 +50,29 @@ void Connection::close() {
 
 bool Connection::send(const Message &msg) {
   // TODO: send a message
-  /*if (!is_open()) {  /** TODO: condense into connection error handling func *
-    std::cerr << "Connection was not open" << std::endl;
-    return false; 
-  } */
+
 
   std::string tagAndPayStr = msg.tag + ":" + msg.data + "\n";
   
   ssize_t n = rio_writen(m_fd, tagAndPayStr.c_str(), strlen(tagAndPayStr.c_str()));
 
-  if (n != strlen(tagAndPayStr.c_str())) { 
+  if (n != (ssize_t) strlen(tagAndPayStr.c_str())) { 
     m_last_result = EOF_OR_ERROR;
     return false;
   }
   
   return true;
-
-  /*
-  std::vector<std::string> splitPayload = msg.split_payload(); /** TODO: might be split already *
-  
-  if (splitPayload[0].find("ERROR") != std::string::npos) { // there was an error
-      m_last_result = INVALID_MSG; /** TODO: Might be EOFORERROR instead *
-      return false; 
-  }
-  
-  std::string tagAndPayStr = msg.tag + ":" + msg.data + "\n"; //Convert string to const char* for rio_written 2nd param
-  const char * tagAndPayCharPtr = tagAndPayStr.c_str(); /** TODO: see if this will have null-terminator 
-                                                                  (i.e '\0', important for strlen() function below *
-  ssize_t n = rio_writen(m_fd, tagAndPayCharPtr, strlen(tagAndPayCharPtr)); // writes msg to server
-  
-  if (n < 1 || strlen(tagAndPayCharPtr) != n) { /** TODO: don't know if this needed, but essentially checks if any bytes are even being sent! *
-    m_last_result = EOF_OR_ERROR;
-    return false;
-  }
-  */
-
 }
 
 bool Connection::receive(Message &msg) {
   // TODO: send a message, storing its tag and data in msg
-  /* if (!is_open()) { /** TODO: condense into connection error handling func *
-    std::cerr << "Connection was not open" << std::endl;
-    return false; 
-  } */
-  
   // read response from server
   std::string tag;
   std::string data;
-  char buf[msg.MAX_LEN];
-  ssize_t n = rio_readlineb(&m_fdbuf, buf, msg.MAX_LEN); // issue here
+  char buf[msg.MAX_LEN + 1];
+  ssize_t n = rio_readlineb(&m_fdbuf, buf, msg.MAX_LEN + 1); // issue here
 
-  if (n < 0) {
+  if (n < 1) {
     msg.tag = TAG_ERR; // message wasn't received 
     m_last_result = EOF_OR_ERROR;
     return false;
@@ -110,42 +81,26 @@ bool Connection::receive(Message &msg) {
   const std::string newStr(buf);
   std::string bufStr = trim(newStr);
 
-  size_t colonPos = bufStr.find(":");
-  
-  tag = bufStr.substr(0, colonPos);
-  data = bufStr.substr(colonPos + 1, bufStr.size() - 1);
-  
-  msg.tag = tag;
-  msg.data = data; 
-
-/*
-  /* 2 Invalid Case to handle: 
-      1. if hold you don't have colon 
-      2. (MAYBE) The tag must only require lower case characters
-  *
-  if (!hasColon(bufStr)) {
+  size_t colonPos = bufStr.find(':');
+  if(colonPos == std::string::npos) {
     msg.tag = TAG_ERR;
     m_last_result = INVALID_MSG;
     return false;
   }
-
-  size_t colonPos = bufStr.find(":");
+  
   tag = bufStr.substr(0, colonPos);
+  data = bufStr.substr(colonPos + 1);
 
   if(!isLowerCased(tag)) {
     msg.tag = TAG_ERR;
     m_last_result = INVALID_MSG;
     return false;
   }
+
   
-  data = bufStr.substr(colonPos + 1, bufStr.size() - 1); /** TODO: strlen() or STRING.size ??? (check if neither count null terminator) *
-
   msg.tag = tag;
-  msg.data = data;
+  msg.setData(data); 
 
-  // return true if successful, false if not
-  // make sure that m_last_result is set appropriately
-  */
   return true;
 }
 

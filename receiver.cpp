@@ -31,6 +31,8 @@ int main(int argc, char **argv) {
     
   Message rlogin(TAG_RLOGIN, username);
   Message join(TAG_JOIN, room_name);
+  Message emptyRlogin;
+  Message emptyJoin;
 
   if (!conn.send(rlogin)) { //Error sending login
     std::cerr << rlogin.getData() << std::endl;
@@ -38,9 +40,9 @@ int main(int argc, char **argv) {
     return 1;
   } 
   
-  conn.receive(rlogin);
-  if (rlogin.tag != "ok") { /** TODO: Error checking */
-      std::cerr << rlogin.getData() << std::endl;
+  conn.receive(emptyRlogin);
+  if (emptyRlogin.tag != "ok") { /** TODO: Error checking */
+      std::cerr << emptyRlogin.getData() << std::endl;
       conn.close();
       return 1;
   }
@@ -50,9 +52,9 @@ int main(int argc, char **argv) {
     conn.close();
     return 2;
   }
-  conn.receive(join);
-  if (join.tag != "ok") { // Error recieving join request
-    std::cerr << join.getData() << std::endl;
+  conn.receive(emptyJoin);
+  if (emptyJoin.tag != "ok") { // Error recieving join request
+    std::cerr << emptyJoin.getData() << std::endl;
     conn.close();
     return 2;
   }
@@ -64,9 +66,6 @@ int main(int argc, char **argv) {
   while(1) {
 
     conn.receive(msg);
-    if (msg.getTag() != "ok") { 
-      std::cerr << msg.getData() << std::endl;
-    }
 
     if (msg.getTag() != TAG_DELIVERY) { 
       std::cerr << msg.getData() << std::endl;
@@ -74,7 +73,9 @@ int main(int argc, char **argv) {
     
     std::vector<std::string> loadData = msg.split_payload();
 
-    if (loadData.size() == 3) { 
+    if (loadData.size() != 3) {
+      std::cerr << "invalid payload size" << std::endl;
+    } else { 
       std::string room = loadData[0];
       std::string sender = loadData[1];
       std::string text = loadData[2];

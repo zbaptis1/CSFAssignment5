@@ -4,23 +4,30 @@
 
 
 std::vector<std::string> Message::split_payload() const {
-    std::vector<std::string> result;
+    std::vector<std::string> result(3);
     
    /* Check to see if valid message */
     // An encoded message must not be more than MAX_LENGTH bytes.
-    if ((tag.size() + data.size()) > 253) { // 253 to account for colon and "\n"
+    if ((tag.size() + data.size()) > 255) { // 253 to account for colon and "\n"
       result[0] = "ERROR The given message was longer than 255 bytes"; 
       return result;
     } 
     
-    // A message must be a single line of text with no newline characters contained within it.
-    int newLineCount = std::count(tag.cbegin(), tag.cend(), '\n');
-    if (newLineCount < 1) { 
-      result[0] = "ERROR no newline character"; 
-      return result;
-    } 
+    // // A message must be a single line of text with no newline characters contained within it.
+    // int newLineCount = std::count(tag.cbegin(), tag.cend(), '\n');
+    // if (newLineCount < 1) { 
+    //   result[0] = "ERROR no newline character"; 
+    //   return result;
+    // } 
+    
+    std::string tempData = trim(data);
 
-    if (data.find(":") == std::string::npos) {
+    if(tempData.find('\n') != std::string::npos) {
+      result[0] = "ERROR newline found withing data";
+      return result;
+    }
+
+    if (data.find(':') == std::string::npos) {
         result[0] = "ERROR no colon separator"; 
         return result;
     }
@@ -56,13 +63,7 @@ std::vector<std::string> Message::split_payload() const {
       copy.erase(0, pos + 1);
     }  
 
-    // no more colons, we already got the tag in result[0]
-    // puts the payload into result, and not the "\n"
-    if (copy.find("\r\n") != std::string::npos) {
-      result[index] = copy.substr(0, copy.size() - 4);
-    } else if (copy.find("\n") != std::string::npos) {
-      result[index] = copy.substr(0, copy.size() - 2);
-    }
+    result[index] = copy;
     
     return result; 
   }

@@ -28,6 +28,7 @@ struct Message {
 
   std::string tag;
   std::string data;
+  unsigned size = 0;
 
   Message() { }
 
@@ -37,6 +38,8 @@ struct Message {
 
   std::string getData() { return data; }
   std::string getTag() { return tag; } 
+  size_t getSize() { return size; }
+  void setData(std::string newData ) { data = newData; }
     
 };
 
