@@ -15,15 +15,17 @@ void MessageQueue::enqueue(Message *msg) {
 
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
+
+    
 }
 
 Message *MessageQueue::dequeue() {
   struct timespec ts;
 
   // get the current time using clock_gettime:
-  // we don't check the return value because the only reason
-  // this call would fail is if we specify a clock that doesn't
-  // exist
+    // we don't check the return value because the only reason
+    // this call would fail is if we specify a clock that doesn't
+    // exist
   clock_gettime(CLOCK_REALTIME, &ts);
 
   // compute a time one second in the future
@@ -33,6 +35,7 @@ Message *MessageQueue::dequeue() {
   //       to be available, return nullptr if no message is available
 
   // TODO: remove the next message from the queue, return it
+  m_messages.remove(); /** TODO: Figure out how to remove next element in deuque */
   Message *msg = nullptr;
   return msg;
 }

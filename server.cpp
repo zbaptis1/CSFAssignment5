@@ -35,12 +35,23 @@
 namespace {
 
 void *worker(void *arg) {
-  struct ConnInfo *info = arg;
+  struct ConnInfo *info = (ConnInfo) arg;
 
   pthread_detach(pthread_self());
 
-  server_chat_with_client(info->clientfd, info->webroot);
+  chat_with_client(info->clientfd);
+  Message msg;
+
+  info.conn->receive(msg);
+
+  if (msg.tag == TAG_RLOGIN) { //If user is receiver 
+
+  } else if (msg.tag == TAG_SLOGIN) { //If user is sender
+
+  }
+
   info.conn.close();
+
 
 
   // TODO: use a static cast to convert arg from a void* to
@@ -49,6 +60,7 @@ void *worker(void *arg) {
 
   // TODO: read login message (should be tagged either with
   //       TAG_SLOGIN or TAG_RLOGIN), send response
+
 
 
 
@@ -117,7 +129,7 @@ void Server::handle_client_requests() {
       
       conn(client_fd);
 
-      keep_going = chat_with_client(client_fd);
+
       close(client_fd);
     }
   } 
@@ -158,6 +170,8 @@ int chat_with_client(int client_fd) {
 
 void chat_with_sender() {
   /** TODO: figure out implementation */
+
+
 }
 
 void chat_with_receiver() {
