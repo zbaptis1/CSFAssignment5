@@ -27,9 +27,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // Sending rlogin and join messages (expect a response from
-  // the server for each one)
-    
+  // Sending rlogin and join messages (expect a response from the server for each one)
   Message rlogin(TAG_RLOGIN, username);
   Message join(TAG_JOIN, room_name);
   Message emptyRlogin;
@@ -65,11 +63,9 @@ int main(int argc, char **argv) {
   Message msg;
 
   while(1) { 
-
     conn.receive(msg); //Receive with a empty msg obj to fill in next send request
 
     if (msg.getTag() != TAG_DELIVERY) std::cerr << msg.getData() << std::endl;
-    
     std::vector<std::string> loadData = msg.split_payload();
 
     if (loadData.size() != 3) {

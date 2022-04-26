@@ -16,6 +16,7 @@ struct ConnInfo {
 
   Connection * conn;
   Server * server;
+  webroot 
 
 }
 
@@ -31,6 +32,12 @@ public:
   Room *find_or_create_room(const std::string &room_name);
 
   int chat_with_client(int client_fd);
+
+
+  void chat_with_sender();
+
+  void chat_with_receiver();
+
 
 private:
   // prohibit value semantics

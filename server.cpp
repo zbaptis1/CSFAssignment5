@@ -24,6 +24,14 @@
 // Client thread functions
 ////////////////////////////////////////////////////////////////////////
 
+
+/** NOTES:
+
+  - Keep limit on # of threads created
+  - 
+
+
+*/
 namespace {
 
 void *worker(void *arg) {
@@ -145,4 +153,14 @@ int chat_with_client(int client_fd) {
     return 1;
   }
   
+}
+
+
+void chat_with_sender() {
+  /** TODO: figure out implementation */
+}
+
+void chat_with_receiver() {
+    /** TODO: figure out implementation */
+
 }
