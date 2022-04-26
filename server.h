@@ -4,9 +4,20 @@
 #include <map>
 #include <string>
 #include <pthread.h>
+
+//ADDITIONAL FILE IMPORTS
+#include "connection.h"
+
 class Room;
 
 //ADD ANY ADDITIONAL STRUCTURE(S) WE NEED HERE
+
+struct ConnInfo {
+
+  Connection * conn;
+  Server * server;
+
+}
 
 class Server {
 public:
@@ -18,6 +29,8 @@ public:
   void handle_client_requests();
 
   Room *find_or_create_room(const std::string &room_name);
+
+  int chat_with_client(int client_fd);
 
 private:
   // prohibit value semantics
