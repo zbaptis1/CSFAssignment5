@@ -16,7 +16,7 @@ void MessageQueue::enqueue(Message *msg) {
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
 
-    
+  m_messages.add(msg);
 }
 
 Message *MessageQueue::dequeue() {
