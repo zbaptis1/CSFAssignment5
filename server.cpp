@@ -27,7 +27,13 @@
 namespace {
 
 void *worker(void *arg) {
+  struct ConnInfo *info = arg;
+
   pthread_detach(pthread_self());
+
+  server_chat_with_client(info->clientfd, info->webroot);
+  info.conn.close();
+
 
   // TODO: use a static cast to convert arg from a void* to
   //       whatever pointer type describes the object(s) needed
@@ -36,10 +42,20 @@ void *worker(void *arg) {
   // TODO: read login message (should be tagged either with
   //       TAG_SLOGIN or TAG_RLOGIN), send response
 
+
+
+
   // TODO: depending on whether the client logged in as a sender or
   //       receiver, communicate with the client (implementing
   //       separate helper functions for each of these possibilities
   //       is a good idea)
+
+  if () { /** TODO: figure out how to distinguish a sender from receiver */
+  //Sender
+  } else {
+  //Receiver 
+  }
+
   return nullptr;
 }
 
@@ -119,7 +135,7 @@ int chat_with_client(int client_fd) {
 
   if (rc < 0) return 1; // error reading data from client
 
-  if (strcmp(buf, "quit\n") == 0 || strcmp(buf, "quit\r\n") == 0) return 0;
+  if (msg.tag == TAG_ERR) return 0;
   else {
     FILE *in = fmemopen(buf, (size_t) rc, "r");
     while (fscanf(in, "%d", &val) == 1) { sum += val; }
