@@ -4,10 +4,13 @@
 
 MessageQueue::MessageQueue() {
   // TODO: initialize the mutex and the semaphore
+  ptthread_mutex_init(&m_lock, -1); /** TODO: figure out what 2nd arg should be */
+  sem_init(m_avail, 0, 0); //FROM PIAZZA @937
 }
 
 MessageQueue::~MessageQueue() {
   // TODO: destroy the mutex and the semaphore
+  Sem_destroy(m_avail);
 }
 
 void MessageQueue::enqueue(Message *msg) {
@@ -17,6 +20,7 @@ void MessageQueue::enqueue(Message *msg) {
   // available by calling sem_post
 
   m_messages.add(msg);
+  sem_post(); /** TODO: FROM DIAGRAM, need to user sem_post to notify queue (FIGURE OUT ARGS) */
 }
 
 Message *MessageQueue::dequeue() {

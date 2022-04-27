@@ -6,6 +6,21 @@
 #include <semaphore.h>
 struct Message;
 
+
+typedef struct {
+  void **data;
+  unsigned max_items, head, tail;
+  sem_t slots, items;
+  pthread_mutex_t lock;
+} BoundedQueue;
+
+Bounded queue operations:
+BoundedQueue *bqueue_create(unsigned max_items);
+void bqueue_destroy(BoundedQueue *bq);
+void bqueue_enqueue(BoundedQueue *bq, void *item);
+void *bqueue_dequeue(BoundedQueue *bq);
+
+
 // This data type represents a queue of Messages waiting to
 // be delivered to a receiver
 class MessageQueue {

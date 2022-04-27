@@ -5,8 +5,7 @@
 
 class Guard {
 public:
-  Guard(pthread_mutex_t &lock)
-    : lock(lock) {
+  Guard(pthread_mutex_t &lock): lock(lock) {
     pthread_mutex_lock(&lock);
   }
 
