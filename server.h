@@ -16,8 +16,10 @@ struct ConnInfo {
 
   Connection * conn;
   Server * server;
-  webroot 
-
+  
+  //FROM PARTIAL IMPLEMENTATION
+  ConnInfo(Connection *conn, Server *server) : conn(conn), server(server) { }
+  ~ConnInfo() { delete conn; } // destroy connection when ConnInfo object is destroyed
 }
 
 class Server {

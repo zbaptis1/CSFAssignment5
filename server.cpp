@@ -29,30 +29,29 @@
 
   - Keep limit on # of threads created
   - 
-
-
 */
 namespace {
 
 void *worker(void *arg) {
-  struct ConnInfo *info = (ConnInfo) arg;
-
   pthread_detach(pthread_self());
+  struct ConnInfo *info = static_cast<ConnInfo *>(arg);
 
-  chat_with_client(info->clientfd);
+  std::unique_ptr<ConnInfo> info(info_);
   Message msg;
 
-  info.conn->receive(msg);
-
-  if (msg.tag == TAG_RLOGIN) { //If user is receiver 
-
-  } else if (msg.tag == TAG_SLOGIN) { //If user is sender
-
+  /** TODO: need to do error checking w/ this BOOL function */
+  if (!info->conn->receive(msg)) { //1st receive is not a login
+    if (info->conn->get_last_result() == Connection::INVALID_MSG) {
+      info->conn->send(Message(TAG_ERR, "invalid message"));
+    }
+    return nullptr;
   }
 
-  info.conn.close();
+  std::string userLogin = msg.data;
+  if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr;
 
-
+  if (msg.tag == TAG_RLOGIN) chat_with_receiver(); //If user is receiver
+  else if (msg.tag == TAG_SLOGIN) chat_with_sender();
 
   // TODO: use a static cast to convert arg from a void* to
   //       whatever pointer type describes the object(s) needed
@@ -61,20 +60,10 @@ void *worker(void *arg) {
   // TODO: read login message (should be tagged either with
   //       TAG_SLOGIN or TAG_RLOGIN), send response
 
-
-
-
-
   // TODO: depending on whether the client logged in as a sender or
   //       receiver, communicate with the client (implementing
   //       separate helper functions for each of these possibilities
   //       is a good idea)
-
-  if () { /** TODO: figure out how to distinguish a sender from receiver */
-  //Sender
-  } else {
-  //Receiver 
-  }
 
   return nullptr;
 }
@@ -121,17 +110,22 @@ void Server::handle_client_requests() {
   int keep_going = 1;
   while (keep_going) {
 
-
     // MAYBE LAST 2 ARGS AREN'T NECESSARY: Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
-    int client_fd = Accept(server_fd, NULL, NULL);
+    int client_fd = Accept(m_ssock, NULL, NULL);
     if (client_fd > 0) {
       /** TODO: make a connection object ???    */
-      
-      conn(client_fd);
 
+      ConnInfo *info = new ConnInfo(new Connection(clientfd), this);
 
-      close(client_fd);
-    }
+      pthread_t thr_id;
+      if (pthread_create(&thr_id, nullptr, worker, static_cast<void *>(info)) != 0) {
+        std::cerr << "Could not create thread\n";
+        return;
+      }
+
+      // close(client_fd); /** TODO: see if necessary b/c worker might already handle connection closure w/ deconstructor
+
+    } else std::cerr << "ERROR opening a connection" << std::endl;
   } 
 
   return;
@@ -170,6 +164,22 @@ int chat_with_client(int client_fd) {
 
 void chat_with_sender() {
   /** TODO: figure out implementation */
+
+
+
+  // Just loop reading messages and sending an ok response for each one
+  // while (true) {
+  //   if (!info->conn->receive(msg)) {
+  //     if (info->conn->get_last_result() == Connection::INVALID_MSG) {
+  //       info->conn->send(Message(TAG_ERR, "invalid message"));
+  //     }
+  //     break;
+  //   }
+
+  //   if (!info->conn->send(Message(TAG_OK, "this is just a dummy response"))) {
+  //     break;
+  //   }
+  // }
 
 
 }
