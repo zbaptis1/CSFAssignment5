@@ -48,20 +48,22 @@ void Room::remove_member(User *user) {
 void Room::broadcast_message(const std::string &sender_username, const std::string &message_text) {
   // TODO: send a message to every (receiver) User in the room
 
-
   for (itr = s.begin(); itr != s.end(); itr++) {
-    // cout << *itr << " ";
-
     User* currUser = *itr;
-    Message newMsg(TAG_OK, )
 
     if (currUser->username != sender_username) {
-      currUser->message_queue.enqueue(new Message)
+      currUser->message_queue.enqueue(new Message(TAG_OK, message_text));
     }
   }
+
+
+  
+
   /** TODO: Notes
 
     - Loop through user set
+    - Remember to send a status response after 
+      message got enqueued in all ques (doesn't have to wait)
 
   */
 }

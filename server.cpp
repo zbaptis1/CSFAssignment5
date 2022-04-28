@@ -187,21 +187,31 @@ void chat_with_sender(std::string username, Connection *conn, Server *server) {)
 void chat_with_receiver(std::string username, Connection *conn, Server *server) {) {
     /** TODO: figure out implementation */
 
-  std:string username = conn->
   User *user = new User(username);
   Room *room = server->find_or_create_room(room_name);
 
   room->add_member(user);
 
-
+  Message* msg = nullptr;
 
   while (true) {
     // try to dequeue a Message from the user's MessageQueue
+
+    //User * user = room->members.find(user);
+    //user->deque();
+
+    msg = user->dequeue();
+
+    /** TODO: figure out how to check sucess of dequeue() */
+
+    
 
     // if a Message was successfully dequeued, send a "delivery"
     // message to the receiver. If the send is unsuccessful,
     // break out of the loop (because it's likely that the receiver
     // has exited and the connection is no longer valid)
+
+
   }
 
   // make sure to remove the User from the room
