@@ -50,8 +50,8 @@ void *worker(void *arg) {
   std::string userLogin = msg.data;
   if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr;
 
-  if (msg.tag == TAG_RLOGIN) chat_with_receiver(); //If user is receiver
-  else if (msg.tag == TAG_SLOGIN) chat_with_sender();
+  if (msg.tag == TAG_RLOGIN) chat_with_receiver(userLogin, info->conn, info->server); //If user is receiver
+  else if (msg.tag == TAG_SLOGIN) chat_with_sender(userLogin, info->conn, info->server);
 
   // TODO: use a static cast to convert arg from a void* to
   //       whatever pointer type describes the object(s) needed
@@ -162,7 +162,7 @@ int chat_with_client(int client_fd) {
 }
 
 
-void chat_with_sender() {
+void chat_with_sender(std::string username, Connection *conn, Server *server) {) {
   /** TODO: figure out implementation */
 
 
@@ -184,7 +184,27 @@ void chat_with_sender() {
 
 }
 
-void chat_with_receiver() {
+void chat_with_receiver(std::string username, Connection *conn, Server *server) {) {
     /** TODO: figure out implementation */
+
+  std:string username = conn->
+  User *user = new User(username);
+  Room *room = server->find_or_create_room(room_name);
+
+  room->add_member(user);
+
+
+
+  while (true) {
+    // try to dequeue a Message from the user's MessageQueue
+
+    // if a Message was successfully dequeued, send a "delivery"
+    // message to the receiver. If the send is unsuccessful,
+    // break out of the loop (because it's likely that the receiver
+    // has exited and the connection is no longer valid)
+  }
+
+  // make sure to remove the User from the room
+  room->remove_member(user);
 
 }

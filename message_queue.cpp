@@ -39,7 +39,11 @@ Message *MessageQueue::dequeue() {
   //       to be available, return nullptr if no message is available
 
   // TODO: remove the next message from the queue, return it
-  m_messages.remove(); /** TODO: Figure out how to remove next element in deuque */
   Message *msg = nullptr;
+  sem_timedwait();
+  msg =  m_messages.front(); /** TODO: Figure out how to remove next element in deuque */
+  delete msg;
+  msg = nullptr;
+
   return msg;
 }

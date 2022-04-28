@@ -35,10 +35,9 @@ public:
 
   int chat_with_client(int client_fd);
 
+  void chat_with_sender(std::string username, Connection *conn, Server *server);
 
-  void chat_with_sender();
-
-  void chat_with_receiver();
+  void chat_with_receiver(std::string username, Connection *conn, Server *server);
 
 
 private:
