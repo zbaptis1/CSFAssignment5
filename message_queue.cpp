@@ -27,23 +27,39 @@ Message *MessageQueue::dequeue() {
   struct timespec ts;
 
   // get the current time using clock_gettime:
-    // we don't check the return value because the only reason
-    // this call would fail is if we specify a clock that doesn't
-    // exist
-  clock_gettime(CLOCK_REALTIME, &ts);
+  // we don't check the return value because the only reason
+  // this call would fail is if we specify a clock that doesn't
+  // exist
+  if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
+    std::cerr << "Error handling realtime clock" << std::endl;
+    return nullptr;
+  }
 
-  // compute a time one second in the future
-  ts.tv_sec += 1;
+  ts.tv_sec += 1; //call sem_timedwait to wait up to 1 second for a message to be available
+  int retTs = sem_timedwait(&full, &ts);
 
-  // TODO: call sem_timedwait to wait up to 1 second for a message
-  //       to be available, return nullptr if no message is available
+/** TODO: see if you need to check this error */
+//   while ((retTs = sem_timedwait(&full, &ts)) == -1 && errno == EINTR)
+//       continue;       /* Restart if interrupted by handler */
+//   /* Check what happened */
+//   if (s == -1)
+//   {
+//     if (errno == ETIMEDOUT)
+//         printf("sem_timedwait() timed out\n");
+//     else
+//         perror("sem_timedwait");
+// } else
+//         printf("sem_timedwait() succeeded\n");
 
-  // TODO: remove the next message from the queue, return it
   Message *msg = nullptr;
-  sem_timedwait();
-  msg =  m_messages.front(); /** TODO: Figure out how to remove next element in deuque */
-  delete msg;
-  msg = nullptr;
+
+  // Remove the next message from the queue, return it
+  if (retTs == -1) { std::cerr << "Dequeue timed out" << std::endl;} 
+  else { //Dequeue successfully timed
+    msg = m_messages.front();
+    m_messages.pop();
+    ts.tv_sec += 1;
+  }
 
   return msg;
 }

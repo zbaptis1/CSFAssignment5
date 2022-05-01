@@ -47,11 +47,15 @@ void *worker(void *arg) {
     return nullptr;
   }
 
-  std::string userLogin = msg.data;
-  if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr;
+  /** TODO: have error checking for what a correct user login is, then put logic here like previous error */
 
-  if (msg.tag == TAG_RLOGIN) chat_with_receiver(userLogin, info->conn, info->server); //If user is receiver
-  else if (msg.tag == TAG_SLOGIN) chat_with_sender(userLogin, info->conn, info->server);
+  std::string userLogin = msg.data;
+  User *thisUser = new User(userLogin); //Dynamically make user on top level of thread, then pass to sender/receiver functions
+
+  if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr; //Understand this logic for other send requests
+
+  if (msg.tag == TAG_RLOGIN) chat_with_receiver(thisUser, info->conn, info->server); //If user is receiver
+  else if (msg.tag == TAG_SLOGIN) chat_with_sender(thisUser, info->conn, info->server);
 
   // TODO: use a static cast to convert arg from a void* to
   //       whatever pointer type describes the object(s) needed
@@ -66,8 +70,6 @@ void *worker(void *arg) {
   //       is a good idea)
 
   return nullptr;
-}
-
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -135,9 +137,14 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   // TODO: return a pointer to the unique Room object representing
   //       the named chat room, creating a new one if necessary
 
-  return nullptr;
-}
+  auto roomPair = m_rooms.find(room_name); //Use find function to store result TODO: find out type of returned val
+  if (roomPair != m_rooms.end()) return roomPair->second; //Use arrow-> reference to get value from iterator pointing to pair
+  
+  Room* newRoom = new Room(room_name); //Create new room if not found in map
+  m_rooms[room_name] = newRoom; //Add to map of rooms
 
+  return newRoom;
+}
 
 int chat_with_client(int client_fd) {
 
@@ -184,34 +191,51 @@ void chat_with_sender(std::string username, Connection *conn, Server *server) {)
 
 }
 
-void chat_with_receiver(std::string username, Connection *conn, Server *server) {) {
+
+void chat_with_receiver(User *user, Connection *conn, Server *server) {
     /** TODO: figure out implementation */
 
-  User *user = new User(username);
-  Room *room = server->find_or_create_room(room_name);
+  Message msg;
 
+  /** TODO: need to do error checking w/ this BOOL function */
+  if (!info->conn->receive(msg)) { //1st receive is not a login
+    std::string last_result = info->conn->get_last_result();
+    if (last_result == Connection::INVALID_MSG) {
+      info->conn->send(Message(TAG_ERR, "invalid message"));
+    }
+  } else if (last_result == Connection::EOF_OR_ERROR) {
+    /** TODO: send error */
+  }
+
+
+    /** TODO: ADD OTHER ERROR CHECKING */
+
+    std::string room_name = msg.data;
+
+  Room *room = server->find_or_create_room(room_name);
   room->add_member(user);
 
   Message* msg = nullptr;
 
   while (true) {
     // try to dequeue a Message from the user's MessageQueue
-
-    //User * user = room->members.find(user);
-    //user->deque();
-
-    msg = user->dequeue();
+    msg = user->mqueue.dequeue();
 
     /** TODO: figure out how to check sucess of dequeue() */
-
-    
-
     // if a Message was successfully dequeued, send a "delivery"
     // message to the receiver. If the send is unsuccessful,
     // break out of the loop (because it's likely that the receiver
     // has exited and the connection is no longer valid)
 
+    Message newMsg = *msg;
 
+    /** TODO: IFF sent request was received, then perform a delivery message */
+    if (msg) info->conn->send(newMsg);
+    else {
+        conn->send(TAG_ERR, "Empty error");
+        break;
+    }
+    
   }
 
   // make sure to remove the User from the room
