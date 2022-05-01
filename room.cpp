@@ -3,8 +3,7 @@
 #include "message_queue.h"
 #include "user.h"
 #include "room.h"
-
-
+#include <iostream>
 
 /** NOTES:
 
@@ -19,7 +18,7 @@
 */
 Room::Room(const std::string &room_name): room_name(room_name) {
   // TODO: initialize the mutex
-  ptthread_mutex_init(&lock, -1); /** TODO: figure out what 2nd arg should be */
+  pthread_mutex_init(&lock, -1); /** TODO: figure out what 2nd arg should be */
 }
 
 Room::~Room() {
@@ -31,7 +30,8 @@ void Room::add_member(User *user) {
   // TODO: add User to the room
 
   //PROTOTYPE CODE
-  if (!memeber.has(user)) members.add(user); 
+  
+  if (members.find(user) == members.end()) members.insert(user); 
   else std::cerr << "Set already has user specified" << std::endl;
    
 }
@@ -40,7 +40,7 @@ void Room::remove_member(User *user) {
   // TODO: remove User from the room
 
   //PROTOTYPE CODE: 
-  if (memeber.has(user)) members.remove(user); /** TODO: see if theres a special case */
+  if (members.find(user) != members.end()) members.erase(members.find(user)); /** TODO: see if theres a special case */
   else std::cerr << "Set does not has specified user" << std::endl;
 
 }
@@ -48,11 +48,11 @@ void Room::remove_member(User *user) {
 void Room::broadcast_message(const std::string &sender_username, const std::string &message_text) {
   // TODO: send a message to every (receiver) User in the room
 
-  for (itr = s.begin(); itr != s.end(); itr++) {
-    User* currUser = *itr;
+  for (std::set<User*>::iterator s = members.begin(); s != members.end(); s++) {
+    User* currUser = *s;
 
     if (currUser->username != sender_username) {
-      currUser->mqueue->enqueue(new Message(TAG_OK, message_text));
+      currUser->mqueue.enqueue(new Message(TAG_OK, message_text));
     }
   }
 

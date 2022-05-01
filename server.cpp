@@ -24,20 +24,16 @@
 // Client thread functions
 ////////////////////////////////////////////////////////////////////////
 
-
 /** NOTES:
 
   - Keep limit on # of threads created
   - 
 */
 
-
 namespace {
   void *worker(void *arg) {
     pthread_detach(pthread_self());
-    struct ConnInfo *info_ = static_cast<ConnInfo *>(arg);
-
-    std::unique_ptr<ConnInfo> info(info_);
+    ConnInfo *info = static_cast<ConnInfo *>(arg);
     Message msg;
 
     /** TODO: need to do error checking w/ this BOOL function */
@@ -56,10 +52,10 @@ namespace {
     if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr; //Understand this logic for other send requests
 
     if (msg.tag == TAG_RLOGIN) { 
-      chat_with_receiver(thisUser, info->conn, info->server); 
+      info->server->chat_with_receiver(thisUser, info->conn, info->server); 
     } else if (msg.tag == TAG_SLOGIN) {
-      chat_with_sender(thisUser, info->conn, info->server)
-    };
+      info->server->chat_with_sender(thisUser, info->conn, info->server);
+    }
 
     // TODO: use a static cast to convert arg from a void* to
     //       whatever pointer type describes the object(s) needed
@@ -76,6 +72,7 @@ namespace {
     return nullptr;
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////////
 // Server member function implementation
@@ -142,8 +139,7 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   // TODO: return a pointer to the unique Room object representing
   //       the named chat room, creating a new one if necessary
 
-  auto roomPair = m_rooms.find(room_name); //Use find function to store result TODO: find out type of returned val
-  if (roomPair != m_rooms.end()) return roomPair->second; //Use arrow-> reference to get value from iterator pointing to pair
+  if (m_rooms.find(room_name) != m_rooms.end()) return m_rooms[room_name]; //Use arrow-> reference to get value from iterator pointing to pair
   
   Room* newRoom = new Room(room_name); //Create new room if not found in map
   m_rooms[room_name] = newRoom; //Add to map of rooms
@@ -200,31 +196,32 @@ void Server::chat_with_sender(User* user, Connection *conn, Server *server) {
 void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     /** TODO: figure out implementation */
 
-  Message msg;
 
   /** TODO: need to do error checking w/ this BOOL function */
-  if (!info->conn->receive(msg)) { //1st receive is not a login
-    std::string last_result = info->conn->get_last_result();
+  
+  Message msg;
+
+  if (!conn->receive(msg)) { //1st receive is not a login
+    Connection::Result last_result = conn->get_last_result();
     if (last_result == Connection::INVALID_MSG) {
-      info->conn->send(Message(TAG_ERR, "invalid message"));
-    }
-  } else if (last_result == Connection::EOF_OR_ERROR) {
+      conn->send(Message(TAG_ERR, "invalid message"));
+    } else if (last_result == Connection::EOF_OR_ERROR) {
     /** TODO: send error */
+    }
   }
 
 
-    /** TODO: ADD OTHER ERROR CHECKING */
+  /** TODO: ADD OTHER ERROR CHECKING */
 
-    std::string room_name = msg.data;
-
+  std::string room_name = msg.data;
   Room *room = server->find_or_create_room(room_name);
   room->add_member(user);
 
-  Message* msg = nullptr;
 
+  Message *newMsg;
   while (true) {
     // try to dequeue a Message from the user's MessageQueue
-    msg = user->mqueue.dequeue();
+    newMsg = user->mqueue.dequeue();
 
     /** TODO: figure out how to check sucess of dequeue() */
     // if a Message was successfully dequeued, send a "delivery"
@@ -232,15 +229,16 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     // break out of the loop (because it's likely that the receiver
     // has exited and the connection is no longer valid)
 
-    Message newMsg = *msg;
+    Message derefMsg = *newMsg;
 
     /** TODO: IFF sent request was received, then perform a delivery message */
-    if (msg) info->conn->send(newMsg);
+    if (newMsg) {
+      conn->send(derefMsg)
+    }
     else {
-        conn->send(TAG_ERR, "Empty error");
+        conn->send(Message(TAG_ERR, "Empty error"));
         break;
     }
-    
   }
 
   // make sure to remove the User from the room

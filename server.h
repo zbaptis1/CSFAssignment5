@@ -9,17 +9,6 @@
 #include "connection.h"
 
 class Room;
-class Server;
-
-struct ConnInfo {
-
-  Connection * conn;
-  Server* server;
-  
-  //FROM PARTIAL IMPLEMENTATION
-  ConnInfo(Connection *conn, Server *server) : conn(conn), server(server) { }
-  ~ConnInfo() { delete conn; } // destroy connection when ConnInfo object is destroyed
-};
 
 
 //ADD ANY ADDITIONAL STRUCTURE(S) WE NEED HERE
@@ -36,11 +25,8 @@ public:
   Room *find_or_create_room(const std::string &room_name);
 
   int chat_with_client(int client_fd);
-
   void chat_with_sender(User *user, Connection *conn, Server *server);
-
   void chat_with_receiver(User *user, Connection *conn, Server *server);
-
 
 private:
   // prohibit value semantics
@@ -55,6 +41,16 @@ private:
   int m_ssock;
   RoomMap m_rooms;
   pthread_mutex_t m_lock;
+};
+
+struct ConnInfo {
+
+  Connection * conn;
+  Server* server;
+  
+  //FROM PARTIAL IMPLEMENTATION
+  ConnInfo(Connection *conn, Server *server) : conn(conn), server(server) { }
+  ~ConnInfo() { delete conn; } // destroy connection when ConnInfo object is destroyed
 };
 
 #endif // SERVER_H

@@ -1,17 +1,20 @@
 #include <cassert>
 #include <ctime>
+#include <iostream>
+
 #include "message_queue.h"
+#include "Guard.h"
 
 MessageQueue::MessageQueue() {
   // TODO: initialize the mutex and the semaphore
-  ptthread_mutex_init(&m_lock, -1); /** TODO: figure out what 2nd arg should be */
-  sem_init(m_avail, 0, 0); //FROM PIAZZA @937
+  pthread_mutex_init(&m_lock, -1); /** TODO: figure out what 2nd arg should be */
+  sem_init(&m_avail, 0, 0); //FROM PIAZZA @937
 }
 
 MessageQueue::~MessageQueue() {
   // TODO: destroy the mutex and the semaphore
-  sem_destroy(m_avail);
-  ptthread_mutex_destroy(&m_lock);
+  sem_destroy(&m_avail);
+  pthread_mutex_destroy(&m_lock);
 }
 
 void MessageQueue::enqueue(Message *msg) {
@@ -20,7 +23,7 @@ void MessageQueue::enqueue(Message *msg) {
   // available by calling sem_post
   Guard newGuard(m_lock);
 
-  m_messages.add(msg);
+  m_messages.push_front(msg); /** TODO: make sure front or back */
   sem_post(&m_avail); //Need to user sem_post to notify queue
 }
 
@@ -60,7 +63,7 @@ Message *MessageQueue::dequeue() {
   if (retTs == -1) { std::cerr << "Dequeue timed out" << std::endl;} 
   else { //Dequeue successfully timed
     msg = m_messages.front();
-    m_messages.pop();
+    m_messages.pop_front();
     ts.tv_sec += 1; /** TODO: see if this is needed */
   }
 
