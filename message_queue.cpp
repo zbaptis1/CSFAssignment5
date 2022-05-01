@@ -15,12 +15,10 @@ MessageQueue::~MessageQueue() {
 
 void MessageQueue::enqueue(Message *msg) {
   // TODO: put the specified message on the queue
-
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
-
   m_messages.add(msg);
-  sem_post(); /** TODO: FROM DIAGRAM, need to user sem_post to notify queue (FIGURE OUT ARGS) */
+  sem_post(&m_avail); //Need to user sem_post to notify queue
 }
 
 Message *MessageQueue::dequeue() {
@@ -36,7 +34,7 @@ Message *MessageQueue::dequeue() {
   }
 
   ts.tv_sec += 1; //call sem_timedwait to wait up to 1 second for a message to be available
-  int retTs = sem_timedwait(&full, &ts);
+  int retTs = sem_timedwait(&m_avail, &ts);
 
 /** TODO: see if you need to check this error */
 //   while ((retTs = sem_timedwait(&full, &ts)) == -1 && errno == EINTR)

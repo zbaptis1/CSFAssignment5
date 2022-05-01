@@ -52,14 +52,10 @@ void Room::broadcast_message(const std::string &sender_username, const std::stri
     User* currUser = *itr;
 
     if (currUser->username != sender_username) {
-      currUser->message_queue.enqueue(new Message(TAG_OK, message_text));
+      currUser->mqueue->enqueue(new Message(TAG_OK, message_text));
     }
   }
 
-  
-
-
-  
 
   /** TODO: Notes
 
