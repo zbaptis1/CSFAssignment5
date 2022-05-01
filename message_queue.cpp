@@ -10,18 +10,23 @@ MessageQueue::MessageQueue() {
 
 MessageQueue::~MessageQueue() {
   // TODO: destroy the mutex and the semaphore
-  Sem_destroy(m_avail);
+  sem_destroy(m_avail);
+  ptthread_mutex_destroy(&m_lock);
 }
 
 void MessageQueue::enqueue(Message *msg) {
   // TODO: put the specified message on the queue
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
+  Guard newGuard(m_lock);
+
   m_messages.add(msg);
   sem_post(&m_avail); //Need to user sem_post to notify queue
 }
 
 Message *MessageQueue::dequeue() {
+  Guard newGuard(m_lock);
+
   struct timespec ts;
 
   // get the current time using clock_gettime:
@@ -56,7 +61,7 @@ Message *MessageQueue::dequeue() {
   else { //Dequeue successfully timed
     msg = m_messages.front();
     m_messages.pop();
-    ts.tv_sec += 1;
+    ts.tv_sec += 1; /** TODO: see if this is needed */
   }
 
   return msg;

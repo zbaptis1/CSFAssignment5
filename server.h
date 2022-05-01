@@ -9,18 +9,20 @@
 #include "connection.h"
 
 class Room;
-
-//ADD ANY ADDITIONAL STRUCTURE(S) WE NEED HERE
+class Server;
 
 struct ConnInfo {
 
   Connection * conn;
-  Server * server;
+  Server* server;
   
   //FROM PARTIAL IMPLEMENTATION
   ConnInfo(Connection *conn, Server *server) : conn(conn), server(server) { }
   ~ConnInfo() { delete conn; } // destroy connection when ConnInfo object is destroyed
-}
+};
+
+
+//ADD ANY ADDITIONAL STRUCTURE(S) WE NEED HERE
 
 class Server {
 public:
@@ -35,9 +37,9 @@ public:
 
   int chat_with_client(int client_fd);
 
-  void chat_with_sender(std::string username, Connection *conn, Server *server);
+  void chat_with_sender(User *user, Connection *conn, Server *server);
 
-  void chat_with_receiver(std::string username, Connection *conn, Server *server);
+  void chat_with_receiver(User *user, Connection *conn, Server *server);
 
 
 private:

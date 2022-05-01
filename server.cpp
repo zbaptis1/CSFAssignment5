@@ -30,46 +30,51 @@
   - Keep limit on # of threads created
   - 
 */
+
+
 namespace {
+  void *worker(void *arg) {
+    pthread_detach(pthread_self());
+    struct ConnInfo *info_ = static_cast<ConnInfo *>(arg);
 
-void *worker(void *arg) {
-  pthread_detach(pthread_self());
-  struct ConnInfo *info = static_cast<ConnInfo *>(arg);
+    std::unique_ptr<ConnInfo> info(info_);
+    Message msg;
 
-  std::unique_ptr<ConnInfo> info(info_);
-  Message msg;
-
-  /** TODO: need to do error checking w/ this BOOL function */
-  if (!info->conn->receive(msg)) { //1st receive is not a login
-    if (info->conn->get_last_result() == Connection::INVALID_MSG) {
-      info->conn->send(Message(TAG_ERR, "invalid message"));
+    /** TODO: need to do error checking w/ this BOOL function */
+    if (!info->conn->receive(msg)) { //1st receive is not a login
+      if (info->conn->get_last_result() == Connection::INVALID_MSG) {
+        info->conn->send(Message(TAG_ERR, "invalid message"));
+      }
+      return nullptr;
     }
+
+    /** TODO: have error checking for what a correct user login is, then put logic here like previous error */
+
+    std::string userLogin = msg.data;
+    User *thisUser = new User(userLogin); //Dynamically make user on top level of thread, then pass to sender/receiver functions
+
+    if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr; //Understand this logic for other send requests
+
+    if (msg.tag == TAG_RLOGIN) { 
+      chat_with_receiver(thisUser, info->conn, info->server); 
+    } else if (msg.tag == TAG_SLOGIN) {
+      chat_with_sender(thisUser, info->conn, info->server)
+    };
+
+    // TODO: use a static cast to convert arg from a void* to
+    //       whatever pointer type describes the object(s) needed
+    //       to communicate with a client (sender or receiver)
+
+    // TODO: read login message (should be tagged either with
+    //       TAG_SLOGIN or TAG_RLOGIN), send response
+
+    // TODO: depending on whether the client logged in as a sender or
+    //       receiver, communicate with the client (implementing
+    //       separate helper functions for each of these possibilities
+    //       is a good idea)
+
     return nullptr;
   }
-
-  /** TODO: have error checking for what a correct user login is, then put logic here like previous error */
-
-  std::string userLogin = msg.data;
-  User *thisUser = new User(userLogin); //Dynamically make user on top level of thread, then pass to sender/receiver functions
-
-  if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr; //Understand this logic for other send requests
-
-  if (msg.tag == TAG_RLOGIN) chat_with_receiver(thisUser, info->conn, info->server); //If user is receiver
-  else if (msg.tag == TAG_SLOGIN) chat_with_sender(thisUser, info->conn, info->server);
-
-  // TODO: use a static cast to convert arg from a void* to
-  //       whatever pointer type describes the object(s) needed
-  //       to communicate with a client (sender or receiver)
-
-  // TODO: read login message (should be tagged either with
-  //       TAG_SLOGIN or TAG_RLOGIN), send response
-
-  // TODO: depending on whether the client logged in as a sender or
-  //       receiver, communicate with the client (implementing
-  //       separate helper functions for each of these possibilities
-  //       is a good idea)
-
-  return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -78,12 +83,12 @@ void *worker(void *arg) {
 
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
-  ptthread_mutex_init(&m_lock, m_ssock); /** TODO: figure out mutex in threads */
+  pthread_mutex_init(&m_lock, m_ssock); /** TODO: figure out mutex in threads */
 } 
 
 Server::~Server() {
   // TODO: destroy mutex
-  m_lock.destroy(); /** TODO: look at lecture notes for this */
+  pthread_mutex_destroy(&m_lock);
 }
 
 bool Server::listen() {
@@ -91,8 +96,8 @@ bool Server::listen() {
   //       if successful, false if not
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
-
-  int server_fd = open_listenfd(m_port);
+  std::string portStr = "" + m_port;
+  int server_fd = open_listenfd(portStr.c_str());
   if (server_fd < 0) { 
     std::cerr << "ERROR Couldn't listen to server" << std::endl;
     return false;
@@ -117,7 +122,7 @@ void Server::handle_client_requests() {
     if (client_fd > 0) {
       /** TODO: make a connection object ???    */
 
-      ConnInfo *info = new ConnInfo(new Connection(clientfd), this);
+      ConnInfo *info = new ConnInfo(new Connection(client_fd), this);
 
       pthread_t thr_id;
       if (pthread_create(&thr_id, nullptr, worker, static_cast<void *>(info)) != 0) {
@@ -146,30 +151,30 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   return newRoom;
 }
 
-int chat_with_client(int client_fd) {
+int Server::chat_with_client(int client_fd) {
 
-  Connection conn; /** TODO: should we pass conn. obj from server as param or create new one here */
-  Message msg;
+  // Connection conn; /** TODO: should we pass conn. obj from server as param or create new one here */
+  // Message msg;
 
-  // Read line from client
-  conn.receive(msg); 
+  // // Read line from client
+  // conn.receive(msg); 
 
-  if (rc < 0) return 1; // error reading data from client
+  // if (rc < 0) return 1; // error reading data from client
 
-  if (msg.tag == TAG_ERR) return 0;
-  else {
-    FILE *in = fmemopen(buf, (size_t) rc, "r");
-    while (fscanf(in, "%d", &val) == 1) { sum += val; }
-    fclose(in);
-    snprintf(buf, sizeof(buf), "Sum is %d\n", sum);
-    rio_writen(client_fd, buf, strlen(buf));
-    return 1;
-  }
+  // if (msg.tag == TAG_ERR) return 0;
+  // else {
+  //   FILE *in = fmemopen(buf, (size_t) rc, "r");
+  //   while (fscanf(in, "%d", &val) == 1) { sum += val; }
+  //   fclose(in);
+  //   snprintf(buf, sizeof(buf), "Sum is %d\n", sum);
+  //   rio_writen(client_fd, buf, strlen(buf));
+  //   return 1;
+  // }
   
 }
 
 
-void chat_with_sender(std::string username, Connection *conn, Server *server) {) {
+void Server::chat_with_sender(User* user, Connection *conn, Server *server) {
   /** TODO: figure out implementation */
 
 
@@ -192,7 +197,7 @@ void chat_with_sender(std::string username, Connection *conn, Server *server) {)
 }
 
 
-void chat_with_receiver(User *user, Connection *conn, Server *server) {
+void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     /** TODO: figure out implementation */
 
   Message msg;
