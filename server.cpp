@@ -55,7 +55,7 @@ namespace {
       info->server->chat_with_receiver(thisUser, info->conn, info->server); 
     } else if (msg.tag == TAG_SLOGIN) {
       info->server->chat_with_sender(thisUser, info->conn, info->server);
-    }
+    };
 
     // TODO: use a static cast to convert arg from a void* to
     //       whatever pointer type describes the object(s) needed
@@ -93,7 +93,7 @@ bool Server::listen() {
   //       if successful, false if not
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
-  std::string portStr = "" + m_port;
+  std::string portStr = std::to_string(m_port);
   int server_fd = open_listenfd(portStr.c_str());
   if (server_fd < 0) { 
     std::cerr << "ERROR Couldn't listen to server" << std::endl;
@@ -233,7 +233,7 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
 
     /** TODO: IFF sent request was received, then perform a delivery message */
     if (newMsg) {
-      conn->send(derefMsg)
+      conn->send(derefMsg);
     }
     else {
         conn->send(Message(TAG_ERR, "Empty error"));
