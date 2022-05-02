@@ -153,27 +153,27 @@ Room *Server::find_or_create_room(const std::string &room_name) {
   return newRoom;
 }
 
-int Server::chat_with_client(int client_fd) {
+// int Server::chat_with_client(int client_fd) {
 
-  // Connection conn; /** TODO: should we pass conn. obj from server as param or create new one here */
-  // Message msg;
+//   Connection conn; /** TODO: should we pass conn. obj from server as param or create new one here */
+//   Message msg;
 
-  // // Read line from client
-  // conn.receive(msg); 
+//   // Read line from client
+//   conn.receive(msg); 
 
-  // if (rc < 0) return 1; // error reading data from client
+//   if (rc < 0) return 1; // error reading data from client
 
-  // if (msg.tag == TAG_ERR) return 0;
-  // else {
-  //   FILE *in = fmemopen(buf, (size_t) rc, "r");
-  //   while (fscanf(in, "%d", &val) == 1) { sum += val; }
-  //   fclose(in);
-  //   snprintf(buf, sizeof(buf), "Sum is %d\n", sum);
-  //   rio_writen(client_fd, buf, strlen(buf));
-  //   return 1;
-  // }
+//   if (msg.tag == TAG_ERR) return 0;
+//   else {
+//     FILE *in = fmemopen(buf, (size_t) rc, "r");
+//     while (fscanf(in, "%d", &val) == 1) { sum += val; }
+//     fclose(in);
+//     snprintf(buf, sizeof(buf), "Sum is %d\n", sum);
+//     rio_writen(client_fd, buf, strlen(buf));
+//     return 1;
+//   }
   
-}
+// }
 
 
 void Server::chat_with_sender(User* user, Connection *conn, Server *server) {

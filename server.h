@@ -25,7 +25,7 @@ public:
 
   Room *find_or_create_room(const std::string &room_name);
 
-  int chat_with_client(int client_fd);
+  // int chat_with_client(int client_fd);
   void chat_with_sender(User *user, Connection *conn, Server *server);
   void chat_with_receiver(User *user, Connection *conn, Server *server);
 
