@@ -179,10 +179,15 @@ void Server::chat_with_sender(User* user, Connection *conn, Server *server) {
     if (msg.tag == TAG_JOIN) {
       std::string roomName = msg.data;
       // check for valid room name
-      if (room != nullptr) { room->remove_member(user); } // sender is in a room already
-      room = server->find_or_create_room(roomName);
-      room->add_member(user);
-      conn->send(Message(TAG_OK, "succesfully joined " + roomName + "!"));
+      if (!isValidRoomName(roomName)) {
+        conn->send(Message(TAG_ERR, "invalid room name"));
+      } 
+      else {
+        if (room != nullptr) { room->remove_member(user); } // sender is in a room already
+        room = server->find_or_create_room(roomName);
+        room->add_member(user);
+        conn->send(Message(TAG_OK, "succesfully joined " + roomName + "!"));
+      }
     }
     // leave
     else if (msg.tag == TAG_LEAVE) {
@@ -242,19 +247,16 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
 
 
   std::string room_name = msg.data;
-  if (room_name) {  // add room error checking 
+  if (!isValidRoomName(room_name)) {  // add room error checking 
     conn->send(Message(TAG_ERR, "invalid room name"));
     return;
   }
 
-  /** TODO: ADD OTHER ERROR CHECKING */
 
   Room *room = server->find_or_create_room(room_name);
   room->add_member(user);
 
   conn->send(Message(TAG_OK, "succesfully joined room"));
-
-
  
   while (true) {
     // try to dequeue a Message from the user's MessageQueue
@@ -285,4 +287,16 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
   // make sure to remove the User from the room
   room->remove_member(user);
 
+}
+
+
+// if it is a valid room name
+bool isValidRoomName(std::string name) {
+  if (name.size() < 0) return false; 
+
+  for (size_t i = 0; i < name.size(); i++) {
+    if (!isalnum(name[i])) return false;
+  }
+
+  return true;
 }
