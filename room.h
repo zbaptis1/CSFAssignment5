@@ -27,6 +27,8 @@ private:
   pthread_mutex_t lock;
 
   typedef std::set<User *> UserSet;
+  typedef UserSet::iterator UserIterator;
+  
   UserSet members;
 };
 
