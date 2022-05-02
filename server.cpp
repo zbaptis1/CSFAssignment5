@@ -33,7 +33,9 @@
 namespace {
   void *worker(void *arg) {
     pthread_detach(pthread_self());
-    ConnInfo *info = static_cast<ConnInfo *>(arg);
+    ConnInfo *info_ = static_cast<ConnInfo *>(arg);
+    std::unique_ptr<ConnInfo> info(info_);
+
     Message msg;
 
     /** TODO: need to do error checking w/ this BOOL function */
@@ -80,6 +82,7 @@ namespace {
 
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
+  
   pthread_mutex_init(&m_lock, m_ssock); /** TODO: figure out mutex in threads */
 } 
 
@@ -93,7 +96,7 @@ bool Server::listen() {
   //       if successful, false if not
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
-  std::string portStr = "" + m_port;
+  std::string portStr = m_port.to_string();
   int server_fd = open_listenfd(portStr.c_str());
   if (server_fd < 0) { 
     std::cerr << "ERROR Couldn't listen to server" << std::endl;
