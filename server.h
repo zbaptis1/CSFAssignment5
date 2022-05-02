@@ -7,6 +7,7 @@
 
 //ADDITIONAL FILE IMPORTS
 #include "connection.h"
+#include "user.h"
 
 class Room;
 
@@ -27,6 +28,9 @@ public:
   int chat_with_client(int client_fd);
   void chat_with_sender(User *user, Connection *conn, Server *server);
   void chat_with_receiver(User *user, Connection *conn, Server *server);
+
+  std::string getMssock() {return std::to_string(m_ssock);}
+  int getMport() {return m_port;}
 
 private:
   // prohibit value semantics

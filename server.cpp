@@ -36,7 +36,10 @@ namespace {
     ConnInfo *info_ = static_cast<ConnInfo *>(arg);
     std::unique_ptr<ConnInfo> info(info_);
 
+    info->conn->connect(info->server->getMssock(), info->server->getMport()); //Connect server using server fields given
     Message msg;
+
+
 
     /** TODO: need to do error checking w/ this BOOL function */
     if (!info->conn->receive(msg)) { //1st receive is not a login
@@ -75,7 +78,6 @@ namespace {
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 // Server member function implementation
 ////////////////////////////////////////////////////////////////////////
@@ -83,7 +85,8 @@ namespace {
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
   
-  pthread_mutex_init(&m_lock, m_ssock); /** TODO: figure out mutex in threads */
+  /** pthread_mutexattr_t mattr; TODO: see if this is needed for 2nd param, if so HOW */
+  pthread_mutex_init(&m_lock, NULL); /** TODO: figure out mutex in threads */
 } 
 
 Server::~Server() {
@@ -96,9 +99,9 @@ bool Server::listen() {
   //       if successful, false if not
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
-  std::string portStr = m_port.to_string();
-  int server_fd = open_listenfd(portStr.c_str());
-  if (server_fd < 0) { 
+  std::string portStr = std::to_string(m_port);
+  m_ssock = open_listenfd(portStr.c_str()); /** TODO: I believe server_fd = m_ssock (intuition AND todo comment above) */ 
+  if (m_ssock < 0) { 
     std::cerr << "ERROR Couldn't listen to server" << std::endl;
     return false;
     } 

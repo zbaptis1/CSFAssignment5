@@ -18,7 +18,8 @@
 */
 Room::Room(const std::string &room_name): room_name(room_name) {
   // TODO: initialize the mutex
-  pthread_mutex_init(&lock, -1); /** TODO: figure out what 2nd arg should be */
+  /** pthread_mutexattr_t mattr; TODO: see if this is needed for 2nd param, if so HOW */
+  pthread_mutex_init(&lock, NULL); /** TODO: figure out what 2nd arg should be */
 }
 
 Room::~Room() {

@@ -3,11 +3,11 @@
 #include <iostream>
 
 #include "message_queue.h"
-#include "Guard.h"
 
 MessageQueue::MessageQueue() {
   // TODO: initialize the mutex and the semaphore
-  pthread_mutex_init(&m_lock, -1); /** TODO: figure out what 2nd arg should be */
+  /** pthread_mutexattr_t mattr; TODO: see if this is needed for 2nd param, if so HOW */
+  pthread_mutex_init(&m_lock, NULL); /** TODO: figure out what 2nd arg should be */
   sem_init(&m_avail, 0, 0); //FROM PIAZZA @937
 }
 

@@ -4,6 +4,8 @@
 #include <deque>
 #include <pthread.h>
 #include <semaphore.h>
+#include "guard.h"
+
 struct Message;
 
 
