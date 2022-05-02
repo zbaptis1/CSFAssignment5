@@ -255,10 +255,10 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
   conn->send(Message(TAG_OK, "succesfully joined room"));
 
 
-  Message *newMsg;
+ 
   while (true) {
     // try to dequeue a Message from the user's MessageQueue
-    newMsg = user->mqueue.dequeue();
+    Message *newMsg = user->mqueue.dequeue();
 
     /** TODO: figure out how to check sucess of dequeue() */
     // if a Message was successfully dequeued, send a "delivery"
@@ -270,7 +270,11 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
 
     /** TODO: IFF sent request was received, then perform a delivery message */
     if (newMsg) {
-      conn->send(derefMsg);
+      if (conn->send(derefMsg)) {
+        delete newMsg;
+        break;
+      }
+      delete newMsg;
     }
     else {
         conn->send(Message(TAG_ERR, "Empty error"));
