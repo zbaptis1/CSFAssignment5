@@ -47,7 +47,7 @@ Message *MessageQueue::dequeue() {
   // Remove the next message from the queue, return it
   if (retTs == -1) { std::cerr << "Dequeue timed out" << std::endl;} 
   else { //Dequeue successfully timed
-    Guard newGuard(lock);
+    Guard newGuard(m_lock);
     msg = m_messages.front();
     m_messages.pop_front();
   }

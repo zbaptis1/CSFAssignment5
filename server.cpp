@@ -289,9 +289,8 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
 
 }
 
-
 // if it is a valid room name
-bool isValidRoomName(std::string name) {
+bool Server::isValidRoomName(std::string name) {
   if (name.size() < 0) return false; 
 
   for (size_t i = 0; i < name.size(); i++) {
@@ -300,3 +299,4 @@ bool isValidRoomName(std::string name) {
 
   return true;
 }
+
