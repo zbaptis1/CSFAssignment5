@@ -6,27 +6,27 @@
 
 MessageQueue::MessageQueue() {
   // TODO: initialize the mutex and the semaphore
-  pthread_mutex_init(&m_lock, NULL); 
+  pthread_mutex_init(&m_lock, nullptr); 
   sem_init(&m_avail, 0, 0); //FROM PIAZZA @937
 }
 
 MessageQueue::~MessageQueue() {
   // TODO: destroy the mutex and the semaphore
-  sem_destroy(&m_avail);
   pthread_mutex_destroy(&m_lock);
+  sem_destroy(&m_avail);
 }
 
 void MessageQueue::enqueue(Message *msg) {
   // TODO: put the specified message on the queue
   // be sure to notify any thread waiting for a message to be
   // available by calling sem_post
-  Guard newGuard(m_lock);
+  pthread_mutex_lock(&m_lock);
   m_messages.push_back(msg);
+  pthread_mutex_unlock(&m_lock);
   sem_post(&m_avail); //Need to user sem_post to notify queue
 }
 
 Message *MessageQueue::dequeue() {
-  Guard newGuard(m_lock);
 
   struct timespec ts;
 
@@ -45,11 +45,14 @@ Message *MessageQueue::dequeue() {
   Message *msg = nullptr;
 
   // Remove the next message from the queue, return it
-  if (retTs == -1) { std::cerr << "Dequeue timed out" << std::endl;} 
+  if (retTs != 0 ) { std::cerr << "Dequeue timed out" << std::endl; } 
   else { //Dequeue successfully timed
     Guard newGuard(m_lock);
+
+    pthread_mutex_lock(&m_lock);
     msg = m_messages.front();
     m_messages.pop_front();
+    pthread_mutex_unlock(&m_lock);
   }
 
   return msg;

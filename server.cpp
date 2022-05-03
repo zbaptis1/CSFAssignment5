@@ -36,10 +36,7 @@ namespace {
     ConnInfo *info_ = static_cast<ConnInfo *>(arg);
     std::unique_ptr<ConnInfo> info(info_);
 
-    info->conn->connect(info->server->getMssock(), info->server->getMport()); //Connect server using server fields given
     Message msg;
-
-
 
     /** TODO: need to do error checking w/ this BOOL function */
     if (!info->conn->receive(msg)) { //1st receive is not a login
@@ -54,7 +51,7 @@ namespace {
     std::string userLogin = msg.data;
     User *thisUser = new User(userLogin); //Dynamically make user on top level of thread, then pass to sender/receiver functions
 
-    if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin))) return nullptr; //Understand this logic for other send requests
+    if (!info->conn->send(Message(TAG_OK, "Welcome " + userLogin + "!"))) return nullptr; //Understand this logic for other send requests
 
     if (msg.tag == TAG_RLOGIN) { 
       info->server->chat_with_receiver(thisUser, info->conn, info->server); 
@@ -78,7 +75,6 @@ namespace {
     return nullptr;
   }
 }
-
 ////////////////////////////////////////////////////////////////////////
 // Server member function implementation
 ////////////////////////////////////////////////////////////////////////
@@ -115,24 +111,20 @@ void Server::handle_client_requests() {
   //       pthread for each connected client
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 25}
-
-  Connection conn;
-
   while (1) {
 
     // MAYBE LAST 2 ARGS AREN'T NECESSARY: Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
     int client_fd = Accept(m_ssock, NULL, NULL);
     if (client_fd > 0) {
       /** TODO: make a connection object ???    */
-
-      ConnInfo *info = new ConnInfo(new Connection(client_fd), this);
-
+      Connection *conn = new Connection(client_fd);
+      ConnInfo *info = new ConnInfo(conn, this);
       pthread_t thr_id;
-      if (pthread_create(&thr_id, nullptr, worker, static_cast<void *>(info)) < 0) { // static cast? why not just info
+
+      if (pthread_create(&thr_id, nullptr, worker, info) < 0) { // static cast? why not just info
         std::cerr << "Could not create thread\n";
         delete info;
       }
-
       // close(client_fd); /** TODO: see if necessary b/c worker might already handle connection closure w/ deconstructor
 
     } else std::cerr << "ERROR opening a connection" << std::endl;
@@ -148,7 +140,8 @@ Room *Server::find_or_create_room(const std::string &room_name) {
 
 
   // RoomMap::iterator works, could use that be would that be sus?
-  
+  Guard newGuard(m_lock);
+
   if (m_rooms.find(room_name) != m_rooms.end()) return m_rooms[room_name]; //Use arrow-> reference to get value from iterator pointing to pair
   
   Room* newRoom = new Room(room_name); //Create new room if not found in map
@@ -213,7 +206,6 @@ void Server::chat_with_sender(User* user, Connection *conn, Server *server) {
     }
     // invalid message tag
     else { conn->send(Message(TAG_ERR, "invalid message tag")); }
-
   }
     // close the room as the user is done using it
     if (room) { room->remove_member(user); }
@@ -234,7 +226,6 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
       conn->send(Message(TAG_ERR, "invalid message"));
       return;
     } else if (last_result == Connection::EOF_OR_ERROR) {
-    /** TODO: send error */
       conn->send(Message(TAG_ERR, "EOF or Error"));
       return;
     }
@@ -245,13 +236,11 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     return;
   }
 
-
   std::string room_name = msg.data;
   if (!isValidRoomName(room_name)) {  // add room error checking 
     conn->send(Message(TAG_ERR, "invalid room name"));
     return;
   }
-
 
   Room *room = server->find_or_create_room(room_name);
   room->add_member(user);
@@ -271,7 +260,7 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     Message derefMsg = *newMsg;
 
     /** TODO: IFF sent request was received, then perform a delivery message */
-    if (newMsg) {
+    if (newMsg != nullptr) {
       if (conn->send(derefMsg)) {
         delete newMsg;
         break;
@@ -280,13 +269,11 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     }
     else {
         conn->send(Message(TAG_ERR, "Empty error"));
-        break;
     }
   }
 
   // make sure to remove the User from the room
   room->remove_member(user);
-
 }
 
 // if it is a valid room name
