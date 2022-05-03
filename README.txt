@@ -1,21 +1,6 @@
 Name: Yisehak Ebrahim JHED: yebrahi1
 Name: Zyan Baptiste JHED: zbaptis1
 
-## MILESTONE WORK
-*MS1: Need to complete the following*
-- Message h/cpp
-- Connection h/cpp --> ! Priority !
-- Receiver h/cpp
-- Sender h/cpp
-
-
-LOCAL CHANGES 
-*MS2: Need to complete the following
-  - Server h/cpp
-  - Room h/cpp
-  - User h/cpp
-  - MessageQueue.h/cpp
-
 ##Contributions:
 
 Yisehak:
@@ -28,9 +13,6 @@ Yisehak:
 *MS2
 - Implementing server functionality 
 - Working on message queue sections
-- 
-
-
 
 Zyan:
 *MS1
@@ -40,7 +22,9 @@ Zyan:
   how it interacts with receiver
 - In charge of most gradescope submissions
 *MS2
-- ADD CONTRIBUTIONS
+- Chat with sender on server  
+- Fine details with message queue and room
+- ReadME report
 
 Both:
 - Worked on connection, basic functions to complex ones 
@@ -52,15 +36,19 @@ Both:
 
 ##Report
 *Implementation Report: Thread Synchronization 
+When it came to identifying the critical sections, we decided to go based on if any of the changing
+data structures would be accessed by multiple users at the same time at any point in time: This would 
+be related to the following structures: the broadcast_message method in Room.cpp, UserSet in Room.h, and MessageQueue.
+  
+  - broadcast_message: Decided to add a guard due to currUser's m_queue being accessed. Without the guard,
+  a failure or deadlock could occur if both broadcast and Receiver were trying to access the same queue at the same
+  time. 
 
-::KEEP IN MIND::
-*Since synchronization is an important part of this assignment, we’d like you to 
-support a report on your synchronization in your README.txt. Please include:
-  - where your critical sections are
-  - how you determined them, and why you chose the synchronization 
-    primitives for each section. 
-  - Also explain how your critical sections ensure that 
-    the synchronization requires are met without introducing synchronization hazards 
-    (e.g. race conditions and deadlocks).
+  - UserSet is accessed in find_or_create_room in Server.cpp. We used a Guard because the set should stay consistent 
+  throughout its updates in the method, then unlocking when it was acceptable. 
 
+  - MessageQueue: For dequeue, threads should have access to the MessageQueue while time-related functions were running.
 
+We don't have any race conditions or deadlocks because every lock is always called in the same order and 
+unlocked after a section or when the function that is called goes out of scope. This means that material won't 
+be accessed before its been unlocked which would lead to a deadlock. 

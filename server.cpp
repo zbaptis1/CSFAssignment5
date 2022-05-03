@@ -24,12 +24,6 @@
 // Client thread functions
 ////////////////////////////////////////////////////////////////////////
 
-/** NOTES:
-
-  - Keep limit on # of threads created
-  - 
-*/
-
 namespace {
   void *worker(void *arg) {
     pthread_detach(pthread_self());
@@ -38,7 +32,6 @@ namespace {
 
     Message msg;
 
-    /** TODO: need to do error checking w/ this BOOL function */
     if (!info->conn->receive(msg)) { //1st receive is not a login
       if (info->conn->get_last_result() == Connection::INVALID_MSG) {
         info->conn->send(Message(TAG_ERR, "invalid message"));
@@ -46,7 +39,10 @@ namespace {
       return nullptr;
     }
 
-    /** TODO: have error checking for what a correct user login is, then put logic here like previous error */
+    if (msg.tag != TAG_RLOGIN && msg.tag != TAG_SLOGIN) {
+      info->conn->send(Message(TAG_ERR, "1st message has to be slogin or rlogin"));
+      return nullptr;
+    }
 
     std::string userLogin = msg.data;
     User *thisUser = new User(userLogin); //Dynamically make user on top level of thread, then pass to sender/receiver functions
@@ -57,21 +53,8 @@ namespace {
       info->server->chat_with_receiver(thisUser, info->conn, info->server); 
     } else if (msg.tag == TAG_SLOGIN) {
       info->server->chat_with_sender(thisUser, info->conn, info->server);
-    };
+    }
 
-    // TODO: use a static cast to convert arg from a void* to
-    //       whatever pointer type describes the object(s) needed
-    //       to communicate with a client (sender or receiver)
-
-    // TODO: read login message (should be tagged either with
-    //       TAG_SLOGIN or TAG_RLOGIN), send response
-
-    // TODO: depending on whether the client logged in as a sender or
-    //       receiver, communicate with the client (implementing
-    //       separate helper functions for each of these possibilities
-    //       is a good idea)
-
-    delete thisUser;
     return nullptr;
   }
 }
@@ -82,8 +65,7 @@ namespace {
 Server::Server(int port): m_port(port), m_ssock(-1) {
   // TODO: initialize mutex
   
-  /** pthread_mutexattr_t mattr; TODO: see if this is needed for 2nd param, if so HOW */
-  pthread_mutex_init(&m_lock, NULL); /** TODO: figure out mutex in threads */
+  pthread_mutex_init(&m_lock, NULL);
 } 
 
 Server::~Server() {
@@ -97,7 +79,7 @@ bool Server::listen() {
 
   //FROM LECTURE 27: APP PROTOCOLS {SLIDE 23}
   std::string portStr = std::to_string(m_port);
-  m_ssock = open_listenfd(portStr.c_str()); /** TODO: I believe server_fd = m_ssock (intuition AND todo comment above) */ 
+  m_ssock = open_listenfd(portStr.c_str());
   if (m_ssock < 0) { 
     std::cerr << "ERROR Couldn't listen to server" << std::endl;
     return false;
@@ -116,30 +98,24 @@ void Server::handle_client_requests() {
     // MAYBE LAST 2 ARGS AREN'T NECESSARY: Accept(int s, struct sockaddr *addr, socklen_t *addrlen) 
     int client_fd = Accept(m_ssock, NULL, NULL);
     if (client_fd > 0) {
-      /** TODO: make a connection object ???    */
-      Connection *conn = new Connection(client_fd);
-      ConnInfo *info = new ConnInfo(conn, this);
+      ConnInfo *info = new ConnInfo(new Connection(client_fd), this);
       pthread_t thr_id;
 
-      if (pthread_create(&thr_id, nullptr, worker, info) < 0) { // static cast? why not just info
+      if (pthread_create(&thr_id, nullptr, worker, info) != 0) { // static cast? why not just info
         std::cerr << "Could not create thread\n";
         delete info;
+        return;
       }
       // close(client_fd); /** TODO: see if necessary b/c worker might already handle connection closure w/ deconstructor
 
-    } else std::cerr << "ERROR opening a connection" << std::endl;
+    } else {
+      std::cerr << "ERROR opening a connection" << std::endl;
+      return;
+    }
   } 
-
-  return;
 }
 
 Room *Server::find_or_create_room(const std::string &room_name) {
-  // TODO: return a pointer to the unique Room object representing
-  //       the named chat room, creating a new one if necessary
-  // guard g(m_lock) --> idky david has this
-
-
-  // RoomMap::iterator works, could use that be would that be sus?
   Guard newGuard(m_lock);
 
   if (m_rooms.find(room_name) != m_rooms.end()) return m_rooms[room_name]; //Use arrow-> reference to get value from iterator pointing to pair
@@ -151,8 +127,6 @@ Room *Server::find_or_create_room(const std::string &room_name) {
 }
 
 void Server::chat_with_sender(User* user, Connection *conn, Server *server) {
-  /** TODO: figure out implementation */
-
   Message msg;
   Room * room = nullptr;
 
@@ -213,11 +187,6 @@ void Server::chat_with_sender(User* user, Connection *conn, Server *server) {
 
 
 void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
-    /** TODO: figure out implementation */
-
-
-  /** TODO: need to do error checking w/ this BOOL function */
-  
   Message msg;
 
   if (!conn->receive(msg)) { //1st receive is not a login
@@ -251,17 +220,14 @@ void Server::chat_with_receiver(User *user, Connection *conn, Server *server) {
     // try to dequeue a Message from the user's MessageQueue
     Message *newMsg = user->mqueue.dequeue();
 
-    /** TODO: figure out how to check sucess of dequeue() */
     // if a Message was successfully dequeued, send a "delivery"
     // message to the receiver. If the send is unsuccessful,
     // break out of the loop (because it's likely that the receiver
     // has exited and the connection is no longer valid)
 
-    Message derefMsg = *newMsg;
 
-    /** TODO: IFF sent request was received, then perform a delivery message */
     if (newMsg != nullptr) {
-      if (conn->send(derefMsg)) {
+      if (!(conn->send(*newMsg))) {
         delete newMsg;
         break;
       }
